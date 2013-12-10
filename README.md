@@ -45,3 +45,7 @@ Not Complete
 Rate Limiting - You can currently send 5 requests per 10 seconds or 50 per 10 minutes.
 
 Region Checking - Some functions are only available in certain regions and not in others.
+
+Name Sanitization - Not sure how to handle all types of names
+
+Error Code Handling - This assumes the request works every time
