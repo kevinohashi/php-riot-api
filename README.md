@@ -7,6 +7,13 @@ Simply replace API_KEY_HERE with your API key from [Riot Games](http://developer
 
 Testing.php is a simple testing class that shows how to call all the functions
 
+Getting Started
+------------
+
+ - Replace API_KEY_HERE
+ - Create an instance of riotapi - $instance = new riotapi();
+ - Make Calls to the functions listed below and receive JSON data
+
 Functions
 ------------
 
