@@ -1,5 +1,5 @@
 <?php
-include('php-riot-api.php')
+include('php-riot-api.php');
 //testing classes
 $summoner_name = 'RiotSchmick';
 $summoner_id = 585897;
