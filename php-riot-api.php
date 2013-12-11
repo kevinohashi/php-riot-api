@@ -35,44 +35,50 @@ class riotapi {
 	const API_KEY = 'API_KEY_HERE';
 	const RATE_LIMIT_MINUTES = 50;
 	const RATE_LIMIT_SECONDS = 5;
+	const REGION;
+	
+	public function __construct($region)
+	{
+		$this->REGION = $region;		
+	}
 
-	public function getChampion($region){
+	public function getChampion(){
 		$call = 'champion';
 
 		//add API URL to the call
 		$call = self::API_URL_1_1 . $call;
 
-		return $this->request($region,$call);
+		return $this->request($call);
 	}
 
-	public function getGame($region,$id){
+	public function getGame($id){
 		$call = 'game/by-summoner/' . $id . '/recent';
 
 		//add API URL to the call
 		$call = self::API_URL_1_1 . $call;
 
-		return $this->request($region,$call);
+		return $this->request($call);
 	}
 
-	public function getLeague($region,$id){
+	public function getLeague($id){
 		$call = 'league/by-summoner/' . $id;
 
 		//add API URL to the call
 		$call = self::API_URL_2_1 . $call;
 
-		return $this->request($region,$call);
+		return $this->request($call);
 	}
 
-	public function getStats($region,$id,$option='summary'){
+	public function getStats($id,$option='summary'){
 		$call = 'stats/by-summoner/' . $id . '/' . $option;
 
 		//add API URL to the call
 		$call = self::API_URL_1_1 . $call;
 
-		return $this->request($region,$call);
+		return $this->request($call);
 	}
 
-	public function getSummoner($region,$id,$option=null){
+	public function getSummoner($id,$option=null){
 		$call = 'summoner/' . $id;
 		switch ($option) {
 			case 'masteries':
@@ -93,11 +99,11 @@ class riotapi {
 		//add API URL to the call
 		$call = self::API_URL_1_1 . $call;
 
-		return $this->request($region,$call);
+		return $this->request($call);
 	}
 
 
-	public function getSummonerByName($region,$name){
+	public function getSummonerByName($name){
 
 
 		//sanitize name a bit - this will break weird characters
@@ -107,26 +113,26 @@ class riotapi {
 		//add API URL to the call
 		$call = self::API_URL_1_1 . $call;
 
-		return $this->request($region,$call);
+		return $this->request($call);
 	}
 
 
-	public function getTeam($region,$id){
+	public function getTeam($id){
 		$call = 'team/by-summoner/' . $id;
 
 		//add API URL to the call
 		$call = self::API_URL_2_1 . $call;
 
-		return $this->request($region,$call);
+		return $this->request($call);
 	}
 
-	private function request($region,$call){
+	private function request($call){
 
 		//probably should put rate limiting stuff here
 
 
 		//format the full URL
-		$url = $this->format_url($region,$call);
+		$url = $this->format_url($call);
 
 		//call the API and return the result
 		$ch = curl_init($url);
@@ -138,8 +144,8 @@ class riotapi {
 	}
 
 	//creates a full URL you can query on the API
-	private function format_url($region,$call){
-		return str_replace('{region}', $region, $call) . '?api_key=' . self::API_KEY;
+	private function format_url($call){
+		return str_replace('{region}', $this->REGION, $call) . '?api_key=' . self::API_KEY;
 	}
 }
 
