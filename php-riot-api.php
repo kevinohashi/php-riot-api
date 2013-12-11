@@ -35,7 +35,7 @@ class riotapi {
 	const API_KEY = 'API_KEY_HERE';
 	const RATE_LIMIT_MINUTES = 50;
 	const RATE_LIMIT_SECONDS = 5;
-	const REGION;
+	private $REGION;
 	
 	public function __construct($region)
 	{

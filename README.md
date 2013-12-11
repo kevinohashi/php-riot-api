@@ -11,33 +11,34 @@ Getting Started
 ------------
 
  - Replace API_KEY_HERE
- - Create an instance of riotapi - $instance = new riotapi();
+ - Create an instance of riotapi - $instance = new riotapi($region); 
+ - $region can be na, euw, eune, br, tr (br/tr only can call getLeague() and getTeam() functions)
  - Make Calls to the functions listed below and receive JSON data
 
 Functions
 ------------
 
-getSummonerByName($region,$summoner_name);
+getSummonerByName($summoner_name);
 
-getSummoner($region,$summoner_id);
+getSummoner($summoner_id);
 
-getSummoner($region,$summoner_id,'masteries');
+getSummoner($summoner_id,'masteries');
 
-getSummoner($region,$summoner_id,'runes');
+getSummoner($summoner_id,'runes');
 
-getSummoner($region,$summoner_id,'name');
+getSummoner($summoner_id,'name');
 
-getStats($region,$summoner_id);
+getStats($summoner_id);
 
-getStats($region,$summoner_id,'ranked');
+getStats($summoner_id,'ranked');
 
-getTeam($region,$summoner_id);
+getTeam($summoner_id);
 
-getLeague($region,$summoner_id);
+getLeague($summoner_id);
 
-getGame($region,$summoner_id);
+getGame($summoner_id);
 
-getChampion($region);
+getChampion(;
 
 Not Complete
 ------------
