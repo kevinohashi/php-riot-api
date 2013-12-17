@@ -33,8 +33,9 @@ class riotapi {
 	const API_URL_1_1 = 'http://prod.api.pvp.net/api/lol/{region}/v1.1/';
 	const API_URL_2_1 = 'http://prod.api.pvp.net/api/{region}/v2.1/';
 	const API_KEY = 'API_KEY_HERE';
-	const RATE_LIMIT_MINUTES = 50;
-	const RATE_LIMIT_SECONDS = 5;
+	const RATE_LIMIT_MINUTES = 500;
+	const RATE_LIMIT_SECONDS = 10;
+	const CACHE_LIFETIME_MINUTES = 60;
 	private $REGION;
 	
 	public function __construct($region)
@@ -134,12 +135,36 @@ class riotapi {
 		//format the full URL
 		$url = $this->format_url($call);
 
+		//caching
+		$cacheFile = 'cache/' . md5($url);
+
+	    if (file_exists($cacheFile)) {
+	        $fh = fopen($cacheFile, 'r');
+	        $cacheTime = trim(fgets($fh));
+
+	        // if data was cached recently, return cached data
+	        if ($cacheTime > strtotime('-'. CACHE_LIFETIME_MINUTES . ' minutes')) {
+	            return fread($fh,filesize($cacheFile));
+	        }
+
+	        // else delete cache file
+	        fclose($fh);
+	        unlink($cacheFile);
+	    }
+
 		//call the API and return the result
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$result = curl_exec($ch);
 		curl_close($ch);
-		return $result;		
+	
+		//create cache file
+	    $fh = fopen($cacheFile, 'w');
+	    fwrite($fh, time() . "\n");
+	    fwrite($fh, $result);
+	    fclose($fh);
+
+		return $result;	
 
 	}
 
