@@ -11,9 +11,11 @@ Getting Started
 ------------
 
  - Replace API_KEY_HERE
+ - Create folder called 'cache' wherever the script is (make sure it's writeable by php-riot-api)
  - Create an instance of riotapi - $instance = new riotapi($region); 
  - $region can be na, euw, eune, br, tr (br/tr only can call getLeague() and getTeam() functions)
  - Make Calls to the functions listed below and receive JSON data
+ - CACHE_ENABLED is true by default, if you don't want to use caching or are running into issues, set it to false.
 
 Functions
 ------------
@@ -43,7 +45,7 @@ getChampion(;
 Not Complete
 ------------
 
-Rate Limiting - You can currently send 5 requests per 10 seconds or 50 per 10 minutes.
+Rate Limiting - You can currently send 10 requests per 10 seconds or 500 per 10 minutes.
 
 Region Checking - Some functions are only available in certain regions and not in others.
 
