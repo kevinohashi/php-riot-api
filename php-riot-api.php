@@ -36,6 +36,7 @@ class riotapi {
 	const RATE_LIMIT_MINUTES = 500;
 	const RATE_LIMIT_SECONDS = 10;
 	const CACHE_LIFETIME_MINUTES = 60;
+	const CACHE_ENABLED = true;
 	private $REGION;
 	
 	public function __construct($region)
@@ -136,33 +137,37 @@ class riotapi {
 		$url = $this->format_url($call);
 
 		//caching
-		$cacheFile = 'cache/' . md5($url);
+		if(self::CACHE_ENABLED){
+			$cacheFile = 'cache/' . md5($url);
 
-	    if (file_exists($cacheFile)) {
-	        $fh = fopen($cacheFile, 'r');
-	        $cacheTime = trim(fgets($fh));
+		    if (file_exists($cacheFile)) {
+		        $fh = fopen($cacheFile, 'r');
+		        $cacheTime = trim(fgets($fh));
 
-	        // if data was cached recently, return cached data
-	        if ($cacheTime > strtotime('-'. CACHE_LIFETIME_MINUTES . ' minutes')) {
-	            return fread($fh,filesize($cacheFile));
-	        }
+		        // if data was cached recently, return cached data
+		        if ($cacheTime > strtotime('-'. CACHE_LIFETIME_MINUTES . ' minutes')) {
+		            return fread($fh,filesize($cacheFile));
+		        }
 
-	        // else delete cache file
-	        fclose($fh);
-	        unlink($cacheFile);
-	    }
+		        // else delete cache file
+		        fclose($fh);
+		        unlink($cacheFile);
+		    }
+		}
 
 		//call the API and return the result
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$result = curl_exec($ch);
 		curl_close($ch);
-	
-		//create cache file
-	    $fh = fopen($cacheFile, 'w');
-	    fwrite($fh, time() . "\n");
-	    fwrite($fh, $result);
-	    fclose($fh);
+		
+		if(self::CACHE_ENABLED){
+			//create cache file
+		    $fh = fopen($cacheFile, 'w');
+		    fwrite($fh, time() . "\n");
+		    fwrite($fh, $result);
+		    fclose($fh);
+		}
 
 		return $result;	
 
