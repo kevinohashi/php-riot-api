@@ -40,7 +40,7 @@ getLeague($summoner_id);
 
 getGame($summoner_id);
 
-getChampion(;
+getChampion();
 
 Not Complete
 ------------
