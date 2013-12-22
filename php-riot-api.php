@@ -31,7 +31,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 class riotapi {
 	const API_URL_1_1 = 'http://prod.api.pvp.net/api/lol/{region}/v1.1/';
-	const API_URL_2_1 = 'http://prod.api.pvp.net/api/{region}/v2.1/';
+	const API_URL_1_2 = 'http://prod.api.pvp.net/api/lol/{region}/v1.2/';
+	const API_URL_2_1 = 'http://prod.api.pvp.net/api/lol/{region}/v2.2/';
 	const API_KEY = 'API_KEY_HERE';
 	const RATE_LIMIT_MINUTES = 500;
 	const RATE_LIMIT_SECONDS = 10;
@@ -57,7 +58,7 @@ class riotapi {
 		$call = 'game/by-summoner/' . $id . '/recent';
 
 		//add API URL to the call
-		$call = self::API_URL_1_1 . $call;
+		$call = self::API_URL_1_2 . $call;
 
 		return $this->request($call);
 	}
@@ -66,7 +67,7 @@ class riotapi {
 		$call = 'league/by-summoner/' . $id;
 
 		//add API URL to the call
-		$call = self::API_URL_2_1 . $call;
+		$call = self::API_URL_2_2 . $call;
 
 		return $this->request($call);
 	}
@@ -75,7 +76,7 @@ class riotapi {
 		$call = 'stats/by-summoner/' . $id . '/' . $option;
 
 		//add API URL to the call
-		$call = self::API_URL_1_1 . $call;
+		$call = self::API_URL_1_2 . $call;
 
 		return $this->request($call);
 	}
@@ -99,7 +100,7 @@ class riotapi {
 		}
 
 		//add API URL to the call
-		$call = self::API_URL_1_1 . $call;
+		$call = self::API_URL_1_2 . $call;
 
 		return $this->request($call);
 	}
@@ -113,7 +114,7 @@ class riotapi {
 		$call = 'summoner/by-name/' . $name;
 
 		//add API URL to the call
-		$call = self::API_URL_1_1 . $call;
+		$call = self::API_URL_1_2 . $call;
 
 		return $this->request($call);
 	}
