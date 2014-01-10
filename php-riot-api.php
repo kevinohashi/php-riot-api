@@ -146,7 +146,7 @@ class riotapi {
 		        $cacheTime = trim(fgets($fh));
 
 		        // if data was cached recently, return cached data
-		        if ($cacheTime > strtotime('-'. CACHE_LIFETIME_MINUTES . ' minutes')) {
+		        if ($cacheTime > strtotime('-'. self::CACHE_LIFETIME_MINUTES . ' minutes')) {
 		            return fread($fh,filesize($cacheFile));
 		        }
 
