@@ -109,9 +109,8 @@ class riotapi {
 	public function getSummonerByName($name){
 
 
-		//sanitize name a bit - this will break weird characters
-		$name = preg_replace("/[^a-zA-Z0-9 ]+/", "", $name);
-		$call = 'summoner/by-name/' . $name;
+		//use rawurlencode for special characters
+		$call = 'summoner/by-name/' . rawurlencode($name);
 
 		//add API URL to the call
 		$call = self::API_URL_1_2 . $call;
