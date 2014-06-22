@@ -248,7 +248,7 @@ class riotapi {
 
 		if(self::CACHE_ENABLED){
 			//create cache file
-			file_put_contents($cacheFile . ".txt", time() . "\n" . $result);
+			file_put_contents($cacheFile, time() . "\n" . $result);
 		}	
 		return $result;
 	}
