@@ -56,9 +56,14 @@ class riotapi {
 	const CACHE_ENABLED = true;
 	private $REGION;
 
-	public function __construct($region)
+	// Whether or not you want returned queries to be JSON or decoded JSON.
+	// Feel free to remove this commit if you want.
+	public $decode;
+
+	public function __construct($region, $decode=false)
 	{
 		$this->REGION = $region;
+		$this->decode = $decode;
 
 		$this->shortLimitQueue = new SplQueue();
 		$this->longLimitQueue = new SplQueue();
@@ -130,7 +135,13 @@ class riotapi {
 	//returns a summoner's id
 	public function getSummonerId($name) {
 			$summoner = $this->getSummonerByName($name);
-			return $summoner[$name]["id"];
+			if ($this->decode) {
+				return $summoner[$name]["id"];
+			}
+			else {
+				$summoner = json_decode($summoner, true);
+				return $summoner[$name]['id'];
+			}
 	}		
 
 	public function getSummoner($id,$option=null){
@@ -246,6 +257,9 @@ class riotapi {
 		        // if data was cached recently, return cached data
 		        if ($cacheTime > strtotime('-'. self::CACHE_LIFETIME_MINUTES . ' minutes')) {
 		            $data = fread($fh,filesize($cacheFile));
+		            if ($this->decode) {
+			            $data = json_decode($data, true);
+		            }
 		            return $data;
 		        }
 
@@ -264,7 +278,10 @@ class riotapi {
 		if(self::CACHE_ENABLED){
 			//create cache file
 			file_put_contents($cacheFile, time() . "\n" . $result);
-		}	
+		}
+        if ($this->decode) {
+            $result = json_decode($result, true);
+        }	
 		return $result;
 	}
 
