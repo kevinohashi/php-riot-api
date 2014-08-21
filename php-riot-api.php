@@ -38,6 +38,7 @@ class riotapi {
 	const API_URL_2_1 = 'http://prod.api.pvp.net/api/lol/{region}/v2.1/';
 	const API_URL_2_2 = 'http://prod.api.pvp.net/api/lol/{region}/v2.2/';
 	const API_URL_2_3 = "http://prod.api.pvp.net/api/lol/{region}/v2.3/";
+	const API_URL_2_4 = "http://prod.api.pvp.net/api/lol/{region}/v2.4/";
 	const API_URL_STATIC_1_2 = 'http://prod.api.pvp.net/api/lol/static-data/{region}/v1.2/';
 
 	const API_KEY = 'INSERT_API_KEY_HERE';
@@ -78,6 +79,18 @@ class riotapi {
 	public function getStatic($call=null, $id=null) {
 		$call = self::API_URL_STATIC_1_2 . $call . "/" . $id;
 		
+		return $this->request($call, false, true);
+	}
+
+	//New to my knowledge. Returns match details.
+	public function getMatch($matchId) {
+		$call = self::API_URL_2_2  . '/match/' . $matchId;
+		return $this->request($call)
+	}
+
+	#Returns a user's matchHistory given their summoner id.
+	public function getMatchHistory($id) {
+		$call = self::API_URL_2_2  . '/matchhistory/' . $id;
 		return $this->request($call);
 	}
 
@@ -94,7 +107,7 @@ class riotapi {
 		$call = 'league/by-summoner/' . $id . "/" . $entry;
 
 		//add API URL to the call
-		$call = self::API_URL_2_3 . $call;
+		$call = self::API_URL_2_4 . $call;
 
 		return $this->request($call);
 	}
@@ -102,7 +115,7 @@ class riotapi {
 		$call = 'league/challenger?type=RANKED_SOLO_5x5';
 
 		//add API URL to the call
-		$call = self::API_URL_2_3 . $call;
+		$call = self::API_URL_2_4 . $call;
 		return $this->request($call, true);
 	}
 
@@ -162,7 +175,7 @@ class riotapi {
 		$call = 'team/by-summoner/' . $id;
 
 		//add API URL to the call
-		$call = self::API_URL_2_2 . $call;
+		$call = self::API_URL_2_3 . $call;
 
 		return $this->request($call);
 	}
@@ -210,12 +223,14 @@ class riotapi {
 		$queue->enqueue(time());
 	}
 
-	private function request($call, $otherQueries=false) {
+	private function request($call, $otherQueries=false, $static = false) {
 
 		//probably should put rate limiting stuff here
-		// Check rate-limiting queues
-		$this->updateLimitQueue($this->longLimitQueue, self::LONG_LIMIT_INTERVAL, self::RATE_LIMIT_LONG);
-		$this->updateLimitQueue($this->shortLimitQueue, self::SHORT_LIMIT_INTERVAL, self::RATE_LIMIT_SHORT);
+		// Check rate-limiting queues if this is not a static call.
+		if (!$static) {
+			$this->updateLimitQueue($this->longLimitQueue, self::LONG_LIMIT_INTERVAL, self::RATE_LIMIT_LONG);
+			$this->updateLimitQueue($this->shortLimitQueue, self::SHORT_LIMIT_INTERVAL, self::RATE_LIMIT_SHORT);
+		}
 
 		//format the full URL
 		$url = $this->format_url($call, $otherQueries);
