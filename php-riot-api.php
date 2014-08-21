@@ -137,7 +137,7 @@ class riotapi {
 	public function getSummonerId($name) {
 			$summoner = $this->getSummonerByName($name);
 			if (self::DECODE_ENABLED) {
-				return $summoner[$name]["id"];
+				return $summoner[$name]['id'];
 			}
 			else {
 				$summoner = json_decode($summoner, true);
