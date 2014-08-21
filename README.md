@@ -17,30 +17,32 @@ Getting Started
  - Make Calls to the functions listed below and receive JSON data
  - CACHE_ENABLED is true by default, if you don't want to use caching or are running into issues, set it to false.
 
-Functions
+Functions (listed in order they appear in php-riot-api.php)
 ------------
 
-getSummonerByName($summoner_name);
-
-getSummoner($summoner_id);
-
-getSummoner($summoner_id,'masteries');
-
-getSummoner($summoner_id,'runes');
-
-getSummoner($summoner_id,'name');
-
-getStats($summoner_id);
-
-getStats($summoner_id,'ranked');
-
-getTeam($summoner_id);
-
-getLeague($summoner_id);
-
-getGame($summoner_id);
-
 getChampion();
+
+getStatic();
+
+getMatch($matchId);
+
+getMatchHistory($id);
+
+getGame($id);
+
+getLeague($id);
+
+getChallenger();
+
+getStats($id,'summary'); or getStats($id,'ranked');
+
+getSummonerId($name);
+
+getSummoner($id,'masteries'); or getSummoner($id,'runes'); or getSummoner($id,'name');
+
+getSummonerByName($name);
+
+getTeam($id);
 
 Not Complete
 ------------
