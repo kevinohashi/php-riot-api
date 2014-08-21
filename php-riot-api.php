@@ -31,15 +31,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 class riotapi {
-	const API_URL_1_1 = 'http://prod.api.pvp.net/api/lol/{region}/v1.1/';
-	const API_URL_1_2 = 'http://prod.api.pvp.net/api/lol/{region}/v1.2/';
-	const API_URL_1_3 = 'http://prod.api.pvp.net/api/lol/{region}/v1.3/';
-	const API_URL_1_4 = 'http://prod.api.pvp.net/api/lol/{region}/v1.4/';
-	const API_URL_2_1 = 'http://prod.api.pvp.net/api/lol/{region}/v2.1/';
-	const API_URL_2_2 = 'http://prod.api.pvp.net/api/lol/{region}/v2.2/';
-	const API_URL_2_3 = "http://prod.api.pvp.net/api/lol/{region}/v2.3/";
-	const API_URL_2_4 = "http://prod.api.pvp.net/api/lol/{region}/v2.4/";
-	const API_URL_STATIC_1_2 = 'http://prod.api.pvp.net/api/lol/static-data/{region}/v1.2/';
+	const API_URL_1_1 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.1/';
+	const API_URL_1_2 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.2/';
+	const API_URL_1_3 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.3/';
+	const API_URL_1_4 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.4/';
+	const API_URL_2_1 = 'http://{region}.api.pvp.net/api/lol/{region}/v2.1/';
+	const API_URL_2_2 = 'http://{region}.api.pvp.net/api/lol/{region}/v2.2/';
+	const API_URL_2_3 = "http://{region}.api.pvp.net/api/lol/{region}/v2.3/";
+	const API_URL_2_4 = "http://{region}.api.pvp.net/api/lol/{region}/v2.4/";
+	const API_URL_STATIC_1_2 = 'http://{region}.api.pvp.net/api/lol/static-data/{region}/v1.2/';
 
 	const API_KEY = 'INSERT_API_KEY_HERE';
 
@@ -53,17 +53,18 @@ class riotapi {
 
 	// Cache variables
 	const CACHE_LIFETIME_MINUTES = 60;
-	const CACHE_ENABLED = true;
+	const CACHE_ENABLED = TRUE;
 	private $REGION;
 
-	// Whether or not you want returned queries to be JSON or decoded JSON.
-	// Feel free to remove this commit if you want.
-	public $decode;
 
-	public function __construct($region, $decode=false)
+	// Whether or not you want returned queries to be JSON or decoded JSON.
+	// honestly I think this should be a public variable initalized in the constructor, but the style before me seems definitely to use const's.
+	// Remove this commit if you want. - Ahubers
+	const DECODE_ENABLED = TRUE;
+
+	public function __construct($region)
 	{
 		$this->REGION = $region;
-		$this->decode = $decode;
 
 		$this->shortLimitQueue = new SplQueue();
 		$this->longLimitQueue = new SplQueue();
@@ -90,7 +91,7 @@ class riotapi {
 	//New to my knowledge. Returns match details.
 	public function getMatch($matchId) {
 		$call = self::API_URL_2_2  . '/match/' . $matchId;
-		return $this->request($call)
+		return $this->request($call);
 	}
 
 	#Returns a user's matchHistory given their summoner id.
@@ -135,7 +136,7 @@ class riotapi {
 	//returns a summoner's id
 	public function getSummonerId($name) {
 			$summoner = $this->getSummonerByName($name);
-			if ($this->decode) {
+			if (self::DECODE_ENABLED) {
 				return $summoner[$name]["id"];
 			}
 			else {
@@ -257,7 +258,7 @@ class riotapi {
 		        // if data was cached recently, return cached data
 		        if ($cacheTime > strtotime('-'. self::CACHE_LIFETIME_MINUTES . ' minutes')) {
 		            $data = fread($fh,filesize($cacheFile));
-		            if ($this->decode) {
+		            if (self::DECODE_ENABLED) {
 			            $data = json_decode($data, true);
 		            }
 		            return $data;
@@ -279,9 +280,9 @@ class riotapi {
 			//create cache file
 			file_put_contents($cacheFile, time() . "\n" . $result);
 		}
-        if ($this->decode) {
+        if (self::DECODE_ENABLED) {
             $result = json_decode($result, true);
-        }	
+        }
 		return $result;
 	}
 
