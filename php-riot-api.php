@@ -31,14 +31,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 class riotapi {
-	const API_URL_1_1 = 'http://prod.api.pvp.net/api/lol/{region}/v1.1/';
-	const API_URL_1_2 = 'http://prod.api.pvp.net/api/lol/{region}/v1.2/';
-	const API_URL_1_3 = 'http://prod.api.pvp.net/api/lol/{region}/v1.3/';
-	const API_URL_1_4 = 'http://prod.api.pvp.net/api/lol/{region}/v1.4/';
-	const API_URL_2_1 = 'http://prod.api.pvp.net/api/lol/{region}/v2.1/';
-	const API_URL_2_2 = 'http://prod.api.pvp.net/api/lol/{region}/v2.2/';
-	const API_URL_2_3 = "http://prod.api.pvp.net/api/lol/{region}/v2.3/";
-	const API_URL_STATIC_1_2 = 'http://prod.api.pvp.net/api/lol/static-data/{region}/v1.2/';
+	const API_URL_1_1 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.1/';
+	const API_URL_1_2 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.2/';
+	const API_URL_1_3 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.3/';
+	const API_URL_1_4 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.4/';
+	const API_URL_2_1 = 'http://{region}.api.pvp.net/api/lol/{region}/v2.1/';
+	const API_URL_2_2 = 'http://{region}.api.pvp.net/api/lol/{region}/v2.2/';
+	const API_URL_2_3 = "http://{region}.api.pvp.net/api/lol/{region}/v2.3/";
+	const API_URL_2_4 = "http://{region}.api.pvp.net/api/lol/{region}/v2.4/";
+	const API_URL_STATIC_1_2 = 'http://{region}.api.pvp.net/api/lol/static-data/{region}/v1.2/';
 
 	const API_KEY = 'INSERT_API_KEY_HERE';
 
@@ -52,8 +53,14 @@ class riotapi {
 
 	// Cache variables
 	const CACHE_LIFETIME_MINUTES = 60;
-	const CACHE_ENABLED = true;
+	const CACHE_ENABLED = TRUE;
 	private $REGION;
+
+
+	// Whether or not you want returned queries to be JSON or decoded JSON.
+	// honestly I think this should be a public variable initalized in the constructor, but the style before me seems definitely to use const's.
+	// Remove this commit if you want. - Ahubers
+	const DECODE_ENABLED = TRUE;
 
 	public function __construct($region)
 	{
@@ -78,6 +85,18 @@ class riotapi {
 	public function getStatic($call=null, $id=null) {
 		$call = self::API_URL_STATIC_1_2 . $call . "/" . $id;
 		
+		return $this->request($call, false, true);
+	}
+
+	//New to my knowledge. Returns match details.
+	public function getMatch($matchId) {
+		$call = self::API_URL_2_2  . '/match/' . $matchId;
+		return $this->request($call);
+	}
+
+	#Returns a user's matchHistory given their summoner id.
+	public function getMatchHistory($id) {
+		$call = self::API_URL_2_2  . '/matchhistory/' . $id;
 		return $this->request($call);
 	}
 
@@ -94,7 +113,7 @@ class riotapi {
 		$call = 'league/by-summoner/' . $id . "/" . $entry;
 
 		//add API URL to the call
-		$call = self::API_URL_2_3 . $call;
+		$call = self::API_URL_2_4 . $call;
 
 		return $this->request($call);
 	}
@@ -102,7 +121,7 @@ class riotapi {
 		$call = 'league/challenger?type=RANKED_SOLO_5x5';
 
 		//add API URL to the call
-		$call = self::API_URL_2_3 . $call;
+		$call = self::API_URL_2_4 . $call;
 		return $this->request($call, true);
 	}
 
@@ -117,7 +136,13 @@ class riotapi {
 	//returns a summoner's id
 	public function getSummonerId($name) {
 			$summoner = $this->getSummonerByName($name);
-			return $summoner[$name]["id"];
+			if (self::DECODE_ENABLED) {
+				return $summoner[$name]["id"];
+			}
+			else {
+				$summoner = json_decode($summoner, true);
+				return $summoner[$name]['id'];
+			}
 	}		
 
 	public function getSummoner($id,$option=null){
@@ -162,7 +187,7 @@ class riotapi {
 		$call = 'team/by-summoner/' . $id;
 
 		//add API URL to the call
-		$call = self::API_URL_2_2 . $call;
+		$call = self::API_URL_2_3 . $call;
 
 		return $this->request($call);
 	}
@@ -210,12 +235,14 @@ class riotapi {
 		$queue->enqueue(time());
 	}
 
-	private function request($call, $otherQueries=false) {
+	private function request($call, $otherQueries=false, $static = false) {
 
 		//probably should put rate limiting stuff here
-		// Check rate-limiting queues
-		$this->updateLimitQueue($this->longLimitQueue, self::LONG_LIMIT_INTERVAL, self::RATE_LIMIT_LONG);
-		$this->updateLimitQueue($this->shortLimitQueue, self::SHORT_LIMIT_INTERVAL, self::RATE_LIMIT_SHORT);
+		// Check rate-limiting queues if this is not a static call.
+		if (!$static) {
+			$this->updateLimitQueue($this->longLimitQueue, self::LONG_LIMIT_INTERVAL, self::RATE_LIMIT_LONG);
+			$this->updateLimitQueue($this->shortLimitQueue, self::SHORT_LIMIT_INTERVAL, self::RATE_LIMIT_SHORT);
+		}
 
 		//format the full URL
 		$url = $this->format_url($call, $otherQueries);
@@ -231,6 +258,9 @@ class riotapi {
 		        // if data was cached recently, return cached data
 		        if ($cacheTime > strtotime('-'. self::CACHE_LIFETIME_MINUTES . ' minutes')) {
 		            $data = fread($fh,filesize($cacheFile));
+		            if (self::DECODE_ENABLED) {
+			            $data = json_decode($data, true);
+		            }
 		            return $data;
 		        }
 
@@ -249,7 +279,10 @@ class riotapi {
 		if(self::CACHE_ENABLED){
 			//create cache file
 			file_put_contents($cacheFile, time() . "\n" . $result);
-		}	
+		}
+        if (self::DECODE_ENABLED) {
+            $result = json_decode($result, true);
+        }
 		return $result;
 	}
 
