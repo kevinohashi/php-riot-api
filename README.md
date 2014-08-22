@@ -47,7 +47,7 @@ Functions
 	//Returns the challenger ladder.
 	getChallenger();
 
-	//Returnsa  summoner's stats given summoner id.
+	//Returns a summoner's stats given summoner id.
 	getStats($summoner_id);
 	getStats($summoner_id,'ranked');
 
