@@ -72,6 +72,7 @@ class riotapi {
 
 	}
 
+	//Returns all champion information.
 	public function getChampion(){
 		$call = 'champion';
 
@@ -94,12 +95,13 @@ class riotapi {
 		return $this->request($call);
 	}
 
-	#Returns a user's matchHistory given their summoner id.
+	//Returns a user's matchHistory given their summoner id.
 	public function getMatchHistory($id) {
 		$call = self::API_URL_2_2  . '/matchhistory/' . $id;
 		return $this->request($call);
 	}
 
+	//Returns game statistics given a summoner's id.
 	public function getGame($id){
 		$call = 'game/by-summoner/' . $id . '/recent';
 
@@ -108,7 +110,7 @@ class riotapi {
 
 		return $this->request($call);
 	}
-
+	//Returns the league of a given summoner.
 	public function getLeague($id, $entry=null){
 		$call = 'league/by-summoner/' . $id . "/" . $entry;
 
@@ -117,9 +119,15 @@ class riotapi {
 
 		return $this->request($call);
 	}
+	//Returns league information given a *list* of teams.
 	public function getLeagueByTeam($ids){
 		$call = 'league/by-team/';
-		$call .= implode(",", $ids);
+		if (is_array($ids)) {
+			$call .= implode(",", $ids);
+		}
+		else {
+			$call .= $ids;
+		}
 		//add API URL to the call
 		$call = self::API_URL_2_4 . $call;
 		return $this->request($call);
