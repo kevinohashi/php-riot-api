@@ -22,49 +22,49 @@ Getting Started
 Functions
 ------------
 
-//Returns all champion information.
-getChampion();
+	//Returns all champion information.
+	getChampion();
 
-//performs a static call. Not counted in rate limit.
-getStatic($call, $id);
+	//performs a static call. Not counted in rate limit.
+	getStatic($call, $id);
 
-//New Riot API call. Returns match details given a match id.
-getMatch($matchId);
+	//New Riot API call. Returns match details given a match id.
+	getMatch($matchId);
 
-//Returns a user's matchHistory given their summoner id.
-getMatchHistory($summoner_id);
+	//Returns a user's matchHistory given their summoner id.
+	getMatchHistory($summoner_id);
 
-//Returns game statistics given a summoner's id.
-getGame($summoner_id);
+	//Returns game statistics given a summoner's id.
+	getGame($summoner_id);
 
-//Returns the league of a given summoner.
-getLeague($summoner_id);
-getLeague($summoner_id, "entry");
+	//Returns the league of a given summoner.
+	getLeague($summoner_id);
+	getLeague($summoner_id, "entry");
 
-//Returns league information given a *list* of teams.
-getLeagueByTeam($team_ids);
+	//Returns league information given a *list* of teams.
+	getLeagueByTeam($team_ids);
 
-//Returns the challenger ladder.
-getChallenger();
+	//Returns the challenger ladder.
+	getChallenger();
 
-//Returns a summoner's stats given summoner id.
-getStats($summoner_id);
-getStats($summoner_id,'ranked');
+	//Returnsa  summoner's stats given summoner id.
+	getStats($summoner_id);
+	getStats($summoner_id,'ranked');
 
-//returns a summoner's id
-getSummonerId($summoner_name);
+	//returns a summoner's id
+	getSummonerId($summoner_name);
 
-//Returns summoner info given summoner id.
-getSummoner($summoner_id);
-getSummoner($summoner_id,'masteries');
-getSummoner($summoner_id,'runes');
-getSummoner($summoner_id,'name');
+	//Returns summoner info given summoner id.
+	getSummoner($summoner_id);
+	getSummoner($summoner_id,'masteries');
+	getSummoner($summoner_id,'runes');
+	getSummoner($summoner_id,'name');
 
-//Gets a summoner's info given their name, instead of id.
-getSummonerByName($summoner_name);
+	//Gets a summoner's info given their name, instead of id.
+	getSummonerByName($summoner_name);
 
-//Gets the teams of a summoner, given summoner id.
-getTeam($summoner_id);
+	//Gets the teams of a summoner, given summoner id.
+	getTeam($summoner_id);
 
 Not Complete
 ------------
