@@ -117,6 +117,13 @@ class riotapi {
 
 		return $this->request($call);
 	}
+	public function getLeagueByTeam($ids){
+		$call = 'league/by-team/';
+		$call .= implode(",", $ids);
+		//add API URL to the call
+		$call = self::API_URL_2_4 . $call;
+		return $this->request($call);
+	}
 	public function getChallenger() {
 		$call = 'league/challenger?type=RANKED_SOLO_5x5';
 
