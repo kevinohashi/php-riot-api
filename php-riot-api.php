@@ -72,6 +72,7 @@ class riotapi {
 
 	}
 
+	//Returns all champion information.
 	public function getChampion(){
 		$call = 'champion';
 
@@ -94,12 +95,13 @@ class riotapi {
 		return $this->request($call);
 	}
 
-	#Returns a user's matchHistory given their summoner id.
+	//Returns a user's matchHistory given their summoner id.
 	public function getMatchHistory($id) {
 		$call = self::API_URL_2_2  . '/matchhistory/' . $id;
 		return $this->request($call);
 	}
 
+	//Returns game statistics given a summoner's id.
 	public function getGame($id){
 		$call = 'game/by-summoner/' . $id . '/recent';
 
@@ -109,6 +111,7 @@ class riotapi {
 		return $this->request($call);
 	}
 
+	//Returns the league of a given summoner.
 	public function getLeague($id, $entry=null){
 		$call = 'league/by-summoner/' . $id . "/" . $entry;
 
@@ -117,6 +120,22 @@ class riotapi {
 
 		return $this->request($call);
 	}
+
+	//Returns league information given a *list* of teams.
+	public function getLeagueByTeam($ids){
+		$call = 'league/by-team/';
+		if (is_array($ids)) {
+			$call .= implode(",", $ids);
+		}
+		else {
+			$call .= $ids;
+		}
+		//add API URL to the call
+		$call = self::API_URL_2_4 . $call;
+		return $this->request($call);
+	}
+
+	//Returns the challenger ladder.
 	public function getChallenger() {
 		$call = 'league/challenger?type=RANKED_SOLO_5x5';
 
@@ -125,6 +144,7 @@ class riotapi {
 		return $this->request($call, true);
 	}
 
+	//Returns a summoner's stats given summoner id.
 	public function getStats($id,$option='summary'){
 		$call = 'stats/by-summoner/' . $id . '/' . $option;
 
@@ -133,6 +153,7 @@ class riotapi {
 
 		return $this->request($call);
 	}
+	
 	//returns a summoner's id
 	public function getSummonerId($name) {
 			$summoner = $this->getSummonerByName($name);
@@ -145,6 +166,7 @@ class riotapi {
 			}
 	}		
 
+	//Returns summoner info given summoner id.
 	public function getSummoner($id,$option=null){
 		$call = 'summoner/' . $id;
 		switch ($option) {
@@ -169,10 +191,8 @@ class riotapi {
 		return $this->request($call);
 	}
 
-
+	//Gets a summoner's info given their name, instead of id.
 	public function getSummonerByName($name){
-
-
 		//use rawurlencode for special characters
 		$call = 'summoner/by-name/' . rawurlencode($name);
 
@@ -182,7 +202,7 @@ class riotapi {
 		return $this->request($call);
 	}
 
-
+	//Gets the teams of a summoner, given summoner id.
 	public function getTeam($id){
 		$call = 'team/by-summoner/' . $id;
 

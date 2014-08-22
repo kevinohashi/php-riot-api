@@ -21,37 +21,50 @@ Getting Started
 
 Functions
 ------------
-getStatic($call, $id);
 
-getMatch($matchId);
+	//Returns all champion information.
+	getChampion();
 
-getMatchHistory($summoner_id);
+	//performs a static call. Not counted in rate limit.
+	getStatic($call, $id);
 
-getChallenger();
+	//New Riot API call. Returns match details given a match id.
+	getMatch($matchId);
 
-getSummonerByName($summoner_name);
+	//Returns a user's matchHistory given their summoner id.
+	getMatchHistory($summoner_id);
 
-getSummoner($summoner_id);
+	//Returns game statistics given a summoner's id.
+	getGame($summoner_id);
 
-getSummoner($summoner_id,'masteries');
+	//Returns the league of a given summoner.
+	getLeague($summoner_id);
+	getLeague($summoner_id, "entry");
 
-getSummoner($summoner_id,'runes');
+	//Returns league information given a *list* of teams.
+	getLeagueByTeam($team_ids);
 
-getSummoner($summoner_id,'name');
+	//Returns the challenger ladder.
+	getChallenger();
 
-getSummonerId($summoner_name);
+	//Returns a summoner's stats given summoner id.
+	getStats($summoner_id);
+	getStats($summoner_id,'ranked');
 
-getStats($summoner_id);
+	//returns a summoner's id
+	getSummonerId($summoner_name);
 
-getStats($summoner_id,'ranked');
+	//Returns summoner info given summoner id.
+	getSummoner($summoner_id);
+	getSummoner($summoner_id,'masteries');
+	getSummoner($summoner_id,'runes');
+	getSummoner($summoner_id,'name');
 
-getTeam($summoner_id);
+	//Gets a summoner's info given their name, instead of id.
+	getSummonerByName($summoner_name);
 
-getLeague($summoner_id);
-
-getGame($summoner_id);
-
-getChampion();
+	//Gets the teams of a summoner, given summoner id.
+	getTeam($summoner_id);
 
 Not Complete
 ------------
