@@ -54,7 +54,10 @@ class riotapi {
 	// Cache variables
 	const CACHE_LIFETIME_MINUTES = 60;
 	const CACHE_ENABLED = TRUE;
-	private $REGION;
+	
+	private $REGION;	
+	//variable to retrieve last response code
+	private $responseCode; 
 
 
 	// Whether or not you want returned queries to be JSON or decoded JSON.
@@ -281,6 +284,7 @@ class riotapi {
 		            if (self::DECODE_ENABLED) {
 			            $data = json_decode($data, true);
 		            }
+		            $this->responseCode = 200;
 		            return $data;
 		        }
 
@@ -294,6 +298,7 @@ class riotapi {
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$result = curl_exec($ch);
+		$this->responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
 
 		if(self::CACHE_ENABLED){
@@ -313,6 +318,10 @@ class riotapi {
 			return str_replace('{region}', $this->REGION, $call) . '&api_key=' . self::API_KEY;
 		}
 		return str_replace('{region}', $this->REGION, $call) . '?api_key=' . self::API_KEY;
+	}
+
+	public function getLastResponseCode(){
+		return $this->responseCode;
 	}
 
 	public function debug($message) {
