@@ -39,7 +39,7 @@ class riotapi {
 	const API_URL_2_2 = 'http://{region}.api.pvp.net/api/lol/{region}/v2.2/';
 	const API_URL_2_3 = "http://{region}.api.pvp.net/api/lol/{region}/v2.3/";
 	const API_URL_2_4 = "http://{region}.api.pvp.net/api/lol/{region}/v2.4/";
-	const API_URL_STATIC_1_2 = 'http://{region}.api.pvp.net/api/lol/static-data/{region}/v1.2/';
+	const API_URL_STATIC_1_2 = 'http://global.api.pvp.net/api/lol/static-data/{region}/v1.2/';
 
 	const API_KEY = 'INSERT_API_KEY_HERE';
 
