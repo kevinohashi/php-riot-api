@@ -94,13 +94,13 @@ class riotapi {
 
 	//New to my knowledge. Returns match details.
 	public function getMatch($matchId) {
-		$call = self::API_URL_2_2  . '/match/' . $matchId;
+		$call = self::API_URL_2_2  . 'match/' . $matchId;
 		return $this->request($call);
 	}
 
 	//Returns a user's matchHistory given their summoner id.
 	public function getMatchHistory($id) {
-		$call = self::API_URL_2_2  . '/matchhistory/' . $id;
+		$call = self::API_URL_2_2  . 'matchhistory/' . $id;
 		return $this->request($call);
 	}
 
