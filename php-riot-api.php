@@ -39,6 +39,7 @@ class riotapi {
 	const API_URL_2_2 = 'http://{region}.api.pvp.net/api/lol/{region}/v2.2/';
 	const API_URL_2_3 = "http://{region}.api.pvp.net/api/lol/{region}/v2.3/";
 	const API_URL_2_4 = "http://{region}.api.pvp.net/api/lol/{region}/v2.4/";
+	const API_URL_2_5 = "http://{region}.api.pvp.net/api/lol/{region}/v2.5/";
 	const API_URL_STATIC_1_2 = 'http://global.api.pvp.net/api/lol/static-data/{region}/v1.2/';
 
 	const API_KEY = 'INSERT_API_KEY_HERE';
@@ -119,7 +120,7 @@ class riotapi {
 		$call = 'league/by-summoner/' . $id . "/" . $entry;
 
 		//add API URL to the call
-		$call = self::API_URL_2_4 . $call;
+		$call = self::API_URL_2_5 . $call;
 
 		return $this->request($call);
 	}
@@ -134,7 +135,7 @@ class riotapi {
 			$call .= $ids;
 		}
 		//add API URL to the call
-		$call = self::API_URL_2_4 . $call;
+		$call = self::API_URL_2_5 . $call;
 		return $this->request($call);
 	}
 
@@ -143,7 +144,7 @@ class riotapi {
 		$call = 'league/challenger?type=RANKED_SOLO_5x5';
 
 		//add API URL to the call
-		$call = self::API_URL_2_4 . $call;
+		$call = self::API_URL_2_5 . $call;
 		return $this->request($call, true);
 	}
 
@@ -159,6 +160,7 @@ class riotapi {
 	
 	//returns a summoner's id
 	public function getSummonerId($name) {
+			$name = strtolower($name);
 			$summoner = $this->getSummonerByName($name);
 			if (self::DECODE_ENABLED) {
 				return $summoner[$name]['id'];
