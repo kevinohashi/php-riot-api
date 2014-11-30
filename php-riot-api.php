@@ -261,14 +261,6 @@ class riotapi {
 	}
 
 	private function request($call, $otherQueries=false, $static = false) {
-
-		//probably should put rate limiting stuff here
-		// Check rate-limiting queues if this is not a static call.
-		if (!$static) {
-			$this->updateLimitQueue($this->longLimitQueue, self::LONG_LIMIT_INTERVAL, self::RATE_LIMIT_LONG);
-			$this->updateLimitQueue($this->shortLimitQueue, self::SHORT_LIMIT_INTERVAL, self::RATE_LIMIT_SHORT);
-		}
-
 		//format the full URL
 		$url = $this->format_url($call, $otherQueries);
 
@@ -310,6 +302,14 @@ class riotapi {
         if (self::DECODE_ENABLED) {
             $result = json_decode($result, true);
         }
+        
+        	// I'd do the rate stuff here so it doesnt register a call
+		// and then it notices that its already cached
+		if (!$static) {
+			$this->updateLimitQueue($this->longLimitQueue, self::LONG_LIMIT_INTERVAL, self::RATE_LIMIT_LONG);
+			$this->updateLimitQueue($this->shortLimitQueue, self::SHORT_LIMIT_INTERVAL, self::RATE_LIMIT_SHORT);
+		}
+		
 		return $result;
 	}
 
