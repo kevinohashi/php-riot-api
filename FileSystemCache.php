@@ -1,12 +1,23 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Chad
- * Date: 1/21/2015
- * Time: 4:48 AM
- */
+require_once('CacheInterface.php');
 
 class FileSystemCache implements CacheInterface {
+
+	/**
+	 * @var string
+	 */
+	private $directory;
+
+	/**
+	 * @param string $directory Caching directory
+	 */
+	public function __construct($directory)
+	{
+		$this->directory = trim($directory, '/\\') . '/';
+
+		if ( ! file_exists($this->directory))
+			mkdir($this->directory, 0777, true);
+	}
 
 	/**
 	 * @param string $key Check if the cache contains data for the specified key
@@ -14,9 +25,11 @@ class FileSystemCache implements CacheInterface {
 	 */
 	public function has($key)
 	{
-		$entry = $this->load($key);
+		if ( ! file_exists($this->getPath($key)))
+			return false;
 
-		return $this->expired($entry);
+		$entry = $this->load($key);
+		return !$this->expired($entry);
 	}
 
 	/**
@@ -27,10 +40,12 @@ class FileSystemCache implements CacheInterface {
 	{
 		$entry = $this->load($key);
 
-		if ($this->expired($entry))
-			$data = null;
+		$data = null;
 
-		return $entry->data;
+		if ( ! $this->expired($entry))
+			$data = $entry->data;
+
+		return $data;
 	}
 
 	/**
@@ -46,7 +61,7 @@ class FileSystemCache implements CacheInterface {
 
 	private function load($key)
 	{
-		return json_decode(file_get_contents($this->hash($key)));
+		return json_decode(file_get_contents($this->getPath($key)));
 	}
 
 	private function store($key, $data, $ttl, $createdAt)
@@ -57,12 +72,17 @@ class FileSystemCache implements CacheInterface {
 			'data' => $data
 		];
 
-		file_put_contents($this->hash($key), json_encode($entry));
+		file_put_contents($this->getPath($key), json_encode($entry));
+	}
+
+	private function getPath($key)
+	{
+		return $this->directory . $this->hash($key);
 	}
 
 	private function expired($entry)
 	{
-		return (time() + $entry->ttl) > $entry->createdAt;
+		return $entry === null || time() >= ($entry->createdAt + $entry->ttl);
 	}
 
 	private function hash($key)

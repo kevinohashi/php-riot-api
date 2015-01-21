@@ -1,10 +1,12 @@
 <?php
 include('php-riot-api.php');
+include('FileSystemCache.php');
+
 //testing classes
 $summoner_name = 'RiotSchmick';
 $summoner_id = 585897;
 
-$test = new riotapi('na');
+$test = new riotapi('na', new FileSystemCache('cache/'));
 //$r = $test->getSummonerByName($summoner_name);
 //$r = $test->getSummoner($summoner_id);
 //$r = $test->getSummoner($summoner_id,'masteries');
