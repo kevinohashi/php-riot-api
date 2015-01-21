@@ -261,21 +261,19 @@ class riotapi {
 	}
 
 	private function request($call, $otherQueries=false, $static = false) {
-
-		//probably should put rate limiting stuff here
-		// Check rate-limiting queues if this is not a static call.
-		if (!$static) {
-			$this->updateLimitQueue($this->longLimitQueue, self::LONG_LIMIT_INTERVAL, self::RATE_LIMIT_LONG);
-			$this->updateLimitQueue($this->shortLimitQueue, self::SHORT_LIMIT_INTERVAL, self::RATE_LIMIT_SHORT);
-		}
-
-		//format the full URL
+				//format the full URL
 		$url = $this->format_url($call, $otherQueries);
 
 		//caching
 		if($this->cache !== null && $this->cache->has($url)){
 			$result = $this->cache->get($url);
 		} else {
+			// Check rate-limiting queues if this is not a static call.
+			if (!$static) {
+				$this->updateLimitQueue($this->longLimitQueue, self::LONG_LIMIT_INTERVAL, self::RATE_LIMIT_LONG);
+				$this->updateLimitQueue($this->shortLimitQueue, self::SHORT_LIMIT_INTERVAL, self::RATE_LIMIT_SHORT);
+			}
+
 			//call the API and return the result
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
