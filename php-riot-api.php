@@ -54,26 +54,26 @@ class riotapi {
 
 	// Cache variables
 	const CACHE_LIFETIME_MINUTES = 60;
-	const CACHE_ENABLED = TRUE;
 	
 	private $REGION;	
 	//variable to retrieve last response code
 	private $responseCode; 
 
+	private $cache;
 
 	// Whether or not you want returned queries to be JSON or decoded JSON.
 	// honestly I think this should be a public variable initalized in the constructor, but the style before me seems definitely to use const's.
 	// Remove this commit if you want. - Ahubers
 	const DECODE_ENABLED = TRUE;
 
-	public function __construct($region)
+	public function __construct($region, CacheInterface $cache = null)
 	{
 		$this->REGION = $region;
 
 		$this->shortLimitQueue = new SplQueue();
 		$this->longLimitQueue = new SplQueue();
 
-
+		$this->cache = $cache;
 	}
 
 	//Returns all champion information.
@@ -273,40 +273,21 @@ class riotapi {
 		$url = $this->format_url($call, $otherQueries);
 
 		//caching
-		if(self::CACHE_ENABLED){
-			$cacheFile = 'cache/' . md5($url);
+		if($this->cache !== null && $this->cache->has($url)){
+			$result = $this->cache->get($url);
+		} else {
+			//call the API and return the result
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			$result = curl_exec($ch);
+			$this->responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			curl_close($ch);
 
-		    if (file_exists($cacheFile)) {
-		        $fh = fopen($cacheFile, 'r');
-		        $cacheTime = trim(fgets($fh));
-
-		        // if data was cached recently, return cached data
-		        if ($cacheTime > strtotime('-'. self::CACHE_LIFETIME_MINUTES . ' minutes')) {
-		            $data = fread($fh,filesize($cacheFile));
-		            if (self::DECODE_ENABLED) {
-			            $data = json_decode($data, true);
-		            }
-		            $this->responseCode = 200;
-		            return $data;
-		        }
-
-		        // else delete cache file
-		        fclose($fh);
-		        unlink($cacheFile);
-		    }
+			if($this->cache !== null){
+				$this->cache->put($url, $result, self::CACHE_LIFETIME_MINUTES * 60);
+			}
 		}
 
-		//call the API and return the result
-		$ch = curl_init($url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		$result = curl_exec($ch);
-		$this->responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		curl_close($ch);
-
-		if(self::CACHE_ENABLED){
-			//create cache file
-			file_put_contents($cacheFile, time() . "\n" . $result);
-		}
         if (self::DECODE_ENABLED) {
             $result = json_decode($result, true);
         }
