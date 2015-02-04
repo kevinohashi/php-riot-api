@@ -16,9 +16,9 @@ Getting Started
  - Create an instance of riotapi - $instance = new riotapi($region); 
  - $region can be na, euw, eune, br, tr (br/tr only can call getLeague() and getTeam() functions)
  - Make Calls to the functions listed below and receive JSON data
- - CACHE_ENABLED is true by default, if you don't want to use caching or are running into issues, set it to false
+ - Caching is done locally, instantiate php-riot-api with "new riotapi('na', new FileSystemCache('cache/'));" to create a cache in the subfolder 'cache'
  - DECODE_ENABLED is true by default. If you want your returns to be pure JSON and not an associative array, set it to false 
- - Take a look at testing.php for example code, including error handling
+ - Take a look at testing.php for example code, including error handling, caching
 
 Functions
 ------------
@@ -71,5 +71,3 @@ Not Complete
 ------------
 
 Region Checking - Some functions are only available in certain regions and not in others.
-
-Name Sanitization - Not sure how to handle all types of names
