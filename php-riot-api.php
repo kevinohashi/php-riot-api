@@ -42,6 +42,7 @@ class riotapi {
 	const API_URL_2_5 = "http://{region}.api.pvp.net/api/lol/{region}/v2.5/";
 	const API_URL_STATIC_1_2 = 'http://global.api.pvp.net/api/lol/static-data/{region}/v1.2/';
 
+	//const API_KEY = 'INSERT_API_KEY_HERE';
 	const API_KEY = 'INSERT_API_KEY_HERE';
 
 	// Rate limit for 10 minutes
@@ -60,6 +61,12 @@ class riotapi {
 	//variable to retrieve last response code
 	private $responseCode; 
 
+	private static $errorCodes = array(400 => 'BAD_REQUEST',
+									   401 => 'UNAUTHORIZED',
+									   404 => 'NOT_FOUND',
+									   429 => 'RATE_LIMIT_EXCEEDED',
+									   500 => 'SERVER_ERROR',
+									   503 => 'UNAVAILABLE');
 
 	// Whether or not you want returned queries to be JSON or decoded JSON.
 	// honestly I think this should be a public variable initalized in the constructor, but the style before me seems definitely to use const's.
@@ -303,14 +310,16 @@ class riotapi {
 		$this->responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
 
-		if(self::CACHE_ENABLED){
-			//create cache file
-			file_put_contents($cacheFile, time() . "\n" . $result);
-		}
-        if (self::DECODE_ENABLED) {
-            $result = json_decode($result, true);
-        }
-		return $result;
+		if($this->responseCode == 200) {
+			if(self::CACHE_ENABLED){
+				//create cache file
+				file_put_contents($cacheFile, time() . "\n" . $result);
+			}
+        	if (self::DECODE_ENABLED) {
+	            $result = json_decode($result, true);
+        	}
+			return $result;
+		} else throw new Exception(self::$errorCodes[$this->responseCode]);
 	}
 
 	//creates a full URL you can query on the API
