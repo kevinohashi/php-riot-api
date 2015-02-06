@@ -31,16 +31,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 class riotapi {
-	const API_URL_1_1 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.1/';
-	const API_URL_1_2 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.2/';
-	const API_URL_1_3 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.3/';
-	const API_URL_1_4 = 'http://{region}.api.pvp.net/api/lol/{region}/v1.4/';
-	const API_URL_2_1 = 'http://{region}.api.pvp.net/api/lol/{region}/v2.1/';
-	const API_URL_2_2 = 'http://{region}.api.pvp.net/api/lol/{region}/v2.2/';
-	const API_URL_2_3 = "http://{region}.api.pvp.net/api/lol/{region}/v2.3/";
-	const API_URL_2_4 = "http://{region}.api.pvp.net/api/lol/{region}/v2.4/";
-	const API_URL_2_5 = "http://{region}.api.pvp.net/api/lol/{region}/v2.5/";
-	const API_URL_STATIC_1_2 = 'http://global.api.pvp.net/api/lol/static-data/{region}/v1.2/';
+	const API_URL_1_1 = 'https//{region}.api.pvp.net/api/lol/{region}/v1.1/';
+	const API_URL_1_2 = 'https//{region}.api.pvp.net/api/lol/{region}/v1.2/';
+	const API_URL_1_3 = 'https//{region}.api.pvp.net/api/lol/{region}/v1.3/';
+	const API_URL_1_4 = 'https//{region}.api.pvp.net/api/lol/{region}/v1.4/';
+	const API_URL_2_1 = 'https//{region}.api.pvp.net/api/lol/{region}/v2.1/';
+	const API_URL_2_2 = 'https//{region}.api.pvp.net/api/lol/{region}/v2.2/';
+	const API_URL_2_3 = "https//{region}.api.pvp.net/api/lol/{region}/v2.3/";
+	const API_URL_2_4 = "https//{region}.api.pvp.net/api/lol/{region}/v2.4/";
+	const API_URL_2_5 = "https//{region}.api.pvp.net/api/lol/{region}/v2.5/";
+	const API_URL_STATIC_1_2 = 'https//global.api.pvp.net/api/lol/static-data/{region}/v1.2/';
 
 
 	const API_KEY = 'INSERT_API_KEY_HERE';
@@ -289,6 +289,8 @@ class riotapi {
 			//call the API and return the result
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);			
 			$result = curl_exec($ch);
 			$this->responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			curl_close($ch);
