@@ -62,7 +62,8 @@ class riotapi {
 	private $responseCode; 
 
 
-	private static $errorCodes = array(400 => 'BAD_REQUEST',
+	private static $errorCodes = array(0   => 'NO_RESPONSE',
+									   400 => 'BAD_REQUEST',
 									   401 => 'UNAUTHORIZED',
 									   404 => 'NOT_FOUND',
 									   429 => 'RATE_LIMIT_EXCEEDED',
