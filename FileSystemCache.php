@@ -66,11 +66,11 @@ class FileSystemCache implements CacheInterface {
 
 	private function store($key, $data, $ttl, $createdAt)
 	{
-		$entry = [
+		$entry = array(
 			'createdAt' => $createdAt,
 			'ttl' => $ttl,
 			'data' => $data
-		];
+		);
 
 		file_put_contents($this->getPath($key), json_encode($entry));
 	}
