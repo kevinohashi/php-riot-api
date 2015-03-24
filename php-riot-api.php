@@ -41,6 +41,7 @@ class riotapi {
 	const API_URL_2_4 = "https://{region}.api.pvp.net/api/lol/{region}/v2.4/";
 	const API_URL_2_5 = "https://{region}.api.pvp.net/api/lol/{region}/v2.5/";
 	const API_URL_STATIC_1_2 = 'https://global.api.pvp.net/api/lol/static-data/{region}/v1.2/';
+	const API_URL_CURRENT_GAME_1_0 = 'https://{region}.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/';
 
 
 	const API_KEY = 'INSERT_API_KEY_HERE';
@@ -95,6 +96,13 @@ class riotapi {
 		//add API URL to the call
 		$call = self::API_URL_1_2 . $call;
 
+		return $this->request($call);
+	}
+
+	//gets current game information for player on platform (region?)
+	//platform seems to be just uppercase region and 1 afterwards right now.
+	public function getCurrentGame($id,$platform){
+		$call = self::API_URL_CURRENT_GAME_1_0 . $platform . '/' . $id;
 		return $this->request($call);
 	}
 
