@@ -102,7 +102,7 @@ class riotapi {
 	public function getStatic($call=null, $id=null) {
 		$call = self::API_URL_STATIC_1_2 . $call . "/" . $id;
 		
-		return $this->request($call, false, true);
+		return $this->request($call, (strpos($call,'?') !== false), true);
 	}
 
 	//New to my knowledge. Returns match details.
