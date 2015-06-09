@@ -26,6 +26,9 @@ Functions
 	//Returns all champion information.
 	getChampion();
 
+	// Returns all free champions.
+	getFreeChampions();
+
 	//performs a static call. Not counted in rate limit.
 	getStatic($call, $id);
 
