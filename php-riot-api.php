@@ -99,6 +99,16 @@ class riotapi {
 		return $this->request($call);
 	}
 
+	// Returns all free champions.
+	public function getFreeChampions()
+	{
+		$call  = 'champion';
+		$param = '?freeToPlay=true';
+		$call  = self::API_URL_1_2 . $call . $param;
+
+		return $this->request($call, true);
+	}
+
 	//gets current game information for player on platform (region?)
 	//platform seems to be just uppercase region and 1 afterwards right now.
 	public function getCurrentGame($id,$platform){
