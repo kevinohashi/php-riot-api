@@ -26,6 +26,11 @@ class RateLimitSleeper implements RateLimitHandler {
             var_dump('sleeping for: ' . $retryAfter . "\n");
         }
 
+
+        /**
+         * So this is our most basic handler for rate limiting... if we hit the cap, we'll simply sleep for
+         * the recommended duration before continuting
+         */
         sleep($retryAfter);
     }
 

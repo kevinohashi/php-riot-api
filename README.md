@@ -20,6 +20,9 @@ Getting Started
  - DECODE_ENABLED is true by default. If you want your returns to be pure JSON and not an associative array, set it to false 
  - Take a look at testing.php for example code, including error handling, caching
 
+ - The default rate limiter will simply sleep until we're allowed to make a request to riot's API. If you want to override this, you can use your own custom
+   handler by passing it into `riotapi`'s constructor.
+
 Functions
 ------------
 

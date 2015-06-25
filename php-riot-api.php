@@ -50,7 +50,7 @@ class riotapi {
 	const HTTP_OK = 200;
 	const HTTP_RATE_LIMIT = 429;
 
-	const API_KEY = '81be16eb-14f7-413c-a35b-99ec20ce5b20';
+	const API_KEY = 'INSERT_API_KEY_HERE';
 
 	// Rate limit for 10 minutes
 	const LONG_LIMIT_INTERVAL = 600;
@@ -273,6 +273,10 @@ class riotapi {
 		{
 			$this->curlExecute($url);
 
+			/**
+			 * Here we are going to check if we were rate limited. If we WERE rate limited, then lets call our rate limit
+			 * handler and let that class deal with it.
+			 */
 			if ($this->responseCode == self::HTTP_RATE_LIMIT) {
 				$retryAfter = (int) $this->responseHeaders['Retry-After'];
 				$this->rateLimitHandler->handleLimit($retryAfter);
