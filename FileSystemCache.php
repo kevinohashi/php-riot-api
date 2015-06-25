@@ -25,9 +25,6 @@ class FileSystemCache implements CacheInterface {
 	 */
 	public function has($key)
 	{
-		if ( ! file_exists($this->getPath($key)))
-			return false;
-
 		$entry = $this->load($key);
 		return !$this->expired($entry);
 	}
@@ -52,16 +49,40 @@ class FileSystemCache implements CacheInterface {
 	 * @param string $key
 	 * @param $data
 	 * @param int $ttl Time for the data to live inside the cache
-	 * @return mixed
 	 */
 	public function put($key, $data, $ttl = 0)
 	{
 		$this->store($key, $data, $ttl, time());
 	}
 
+	/**
+	 * @param $key
+	 * @param $ttl
+	 * @param $callback
+	 * @return mixed
+	 */
+	public function remember($key, $ttl, $callback)
+	{
+		$entry = $this->load($key);
+
+		if ( ! $this->expired($entry)) {
+			$data = $entry->data;
+		} else {
+			$data = $callback();
+			$this->put($key, $data, $ttl);
+		}
+
+		return $data;
+	}
+
 	private function load($key)
 	{
-		return json_decode(file_get_contents($this->getPath($key)));
+		$path = $this->getPath($key);
+
+		if ( ! file_exists($path))
+			return null;
+
+		return json_decode(file_get_contents($path));
 	}
 
 	private function store($key, $data, $ttl, $createdAt)
