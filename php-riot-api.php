@@ -192,7 +192,7 @@ class riotapi {
 	public function getSummonerId($name) {
 			$name = strtolower($name);
 			$summoner = $this->getSummonerByName($name);
-			if (self::DECODE_ENABLED) {
+			if (!self::DECODE_ENABLED) {
 				return $summoner[$name]['id'];
 			}
 			else {
