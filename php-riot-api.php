@@ -44,7 +44,7 @@ class riotapi {
 	const API_URL_CURRENT_GAME_1_0 = 'https://{region}.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/';
 
 
-	const API_KEY = 'INSERT_API_KEY_HERE';
+	const API_KEY = '098668ec-fd1c-4f53-aaaf-5a4acd001f90';
 
 	// Rate limit for 10 minutes
 	const LONG_LIMIT_INTERVAL = 600;
@@ -188,19 +188,32 @@ class riotapi {
 		return $this->request($call);
 	}
 	
-	//returns a summoner's id
-	public function getSummonerId($name) {
+    //returns a summoner's id
+    public function getSummonerId($name) {
+            $name = strtolower($name);
+            $summoner = $this->getSummonerByName($name);
+            if (!self::DECODE_ENABLED) {
+                return $summoner[$name]['id'];
+            }
+            else {
+                $summoner = json_decode($summoner, true);
+                return $summoner[$name]['id'];
+            }
+    }   	
+
+	//returns a summoner's formatted name
+	public function getSummonerName($name) {
 			$name = strtolower($name);
 			$summoner = $this->getSummonerByName($name);
-			if (self::DECODE_ENABLED) {
-				return $summoner[$name]['id'];
+			if (!self::DECODE_ENABLED) {
+				return $summoner[$name]['name'];
 			}
 			else {
 				$summoner = json_decode($summoner, true);
-				return $summoner[$name]['id'];
+				return $summoner[$name]['name'];
 			}
-	}		
-
+	}	
+	
 	//Returns summoner info given summoner id.
 	public function getSummoner($id,$option=null){
 		$call = 'summoner/' . $id;
