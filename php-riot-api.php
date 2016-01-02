@@ -44,7 +44,7 @@ class riotapi {
 	const API_URL_CURRENT_GAME_1_0 = 'https://{region}.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/';
 
 
-	const API_KEY = '098668ec-fd1c-4f53-aaaf-5a4acd001f90';
+	const API_KEY = 'INSERT_API_KEY_HERE';
 
 	// Rate limit for 10 minutes
 	const LONG_LIMIT_INTERVAL = 600;
