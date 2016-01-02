@@ -131,7 +131,7 @@ class riotapi {
 
 	//Returns a user's matchHistory given their summoner id.
 	public function getMatchHistory($id) {
-		$call = self::API_URL_2_2  . 'matchhistory/' . $id;
+		$call = self::API_URL_2_2  . 'matchlist/by-summoner/ . $id;
 		return $this->request($call);
 	}
 
