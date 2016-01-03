@@ -29,6 +29,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+require_once('CacheInterface.php');
+require_once('NullCache.php');
+require_once('RateLimitHandler.php');
+require_once('RateLimitSleeper.php');
 
 class riotapi {
 	const API_URL_1_1 = 'https://{region}.api.pvp.net/api/lol/{region}/v1.1/';
@@ -43,6 +47,8 @@ class riotapi {
 	const API_URL_STATIC_1_2 = 'https://global.api.pvp.net/api/lol/static-data/{region}/v1.2/';
 	const API_URL_CURRENT_GAME_1_0 = 'https://{region}.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/';
 
+	const HTTP_OK = 200;
+	const HTTP_RATE_LIMIT = 429;
 
 	const API_KEY = 'INSERT_API_KEY_HERE';
 
@@ -56,11 +62,15 @@ class riotapi {
 
 	// Cache variables
 	const CACHE_LIFETIME_MINUTES = 60;
+
 	private $cache;
+	private $rateLimitHandler;
 
 	private $REGION;	
 	//variable to retrieve last response code
-	private $responseCode; 
+	private $responseCode;
+	private $responseHeaders;
+	private $responseBody;
 
 
 	private static $errorCodes = array(0   => 'NO_RESPONSE',
@@ -73,21 +83,18 @@ class riotapi {
 									   503 => 'UNAVAILABLE');
 
 
-
-
 	// Whether or not you want returned queries to be JSON or decoded JSON.
 	// honestly I think this should be a public variable initalized in the constructor, but the style before me seems definitely to use const's.
 	// Remove this commit if you want. - Ahubers
 	const DECODE_ENABLED = TRUE;
 
-	public function __construct($region, CacheInterface $cache = null)
+	public function __construct($region, CacheInterface $cache = null, RateLimitHandler $rateLimitHandler = null)
 	{
 		$this->REGION = $region;
 
-		$this->shortLimitQueue = new SplQueue();
-		$this->longLimitQueue = new SplQueue();
-
-		$this->cache = $cache;
+		// if a cache and rate limiter weren't provided, then we'll just use these default ones
+		$this->cache = $cache = $cache !== null ? $cache : new NullCache();
+		$this->rateLimitHandler = $rateLimitHandler !== null ? $rateLimitHandler : new RateLimitSleeper();
 	}
 
 	//Returns all champion information.
@@ -247,85 +254,67 @@ class riotapi {
 		return $this->request($call);
 	}
 
-	private function updateLimitQueue($queue, $interval, $call_limit){
-		
-		while(!$queue->isEmpty()){
-			
-			/* Three possibilities here.
-			1: There are timestamps outside the window of the interval,
-			which means that the requests associated with them were long
-			enough ago that they can be removed from the queue.
-			2: There have been more calls within the previous interval
-			of time than are allowed by the rate limit, in which case
-			the program blocks to ensure the rate limit isn't broken.
-			3: There are openings in window, more requests are allowed,
-			and the program continues.*/
+	public function getLastResponseHeaders(){
+		return $this->responseHeaders;
+	}
 
-			$timeSinceOldest = time() - $queue->bottom();
-			// I recently learned that the "bottom" of the
-			// queue is the beginning of the queue. Go figure.
+	public function getLastResponseBody(){
+		return $this->responseBody;
+	}
 
-			// Remove timestamps from the queue if they're older than
-			// the length of the interval
-			if($timeSinceOldest > $interval){
-					$queue->dequeue();
-			}
-			
-			// Check to see whether the rate limit would be broken; if so,
-			// block for the appropriate amount of time
-			elseif($queue->count() >= $call_limit){
-				if($timeSinceOldest < $interval){ //order of ops matters
-					echo("sleeping for".($interval - $timeSinceOldest + 1)." seconds\n");
-					sleep($interval - $timeSinceOldest);
-				}
-			}
-			// Otherwise, pass through and let the program continue.
-			else {
-				break;
-			}
-		}
-
-		// Add current timestamp to back of queue; this represents
-		// the current request.
-		$queue->enqueue(time());
+	public function getLastResponseCode(){
+		return $this->responseCode;
 	}
 
 	private function request($call, $otherQueries=false, $static = false) {
 				//format the full URL
 		$url = $this->format_url($call, $otherQueries);
 
-		//caching
-		if($this->cache !== null && $this->cache->has($url)){
-			$result = $this->cache->get($url);
-		} else {
-			// Check rate-limiting queues if this is not a static call.
-			if (!$static) {
-				$this->updateLimitQueue($this->longLimitQueue, self::LONG_LIMIT_INTERVAL, self::RATE_LIMIT_LONG);
-				$this->updateLimitQueue($this->shortLimitQueue, self::SHORT_LIMIT_INTERVAL, self::RATE_LIMIT_SHORT);
+		$result = $this->cache->remember($url, self::CACHE_LIFETIME_MINUTES * 60, function () use ($url, $call, $otherQueries, $static)
+		{
+			$this->curlExecute($url);
+
+			/**
+			 * Here we are going to check if we were rate limited. If we WERE rate limited, then lets call our rate limit
+			 * handler and let that class deal with it.
+			 */
+			if ($this->responseCode == self::HTTP_RATE_LIMIT) {
+				$retryAfter = (int) $this->responseHeaders['Retry-After'];
+				$this->rateLimitHandler->handleLimit($retryAfter);
+
+				if ($this->rateLimitHandler->retryEnabled()) {
+					return $this->request($call, $otherQueries, $static);
+				}
 			}
 
-			//call the API and return the result
-			$ch = curl_init($url);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);			
-			$result = curl_exec($ch);
-			$this->responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-			curl_close($ch);
-
-
-			if($this->responseCode == 200) {
-				if($this->cache !== null){
-					$this->cache->put($url, $result, self::CACHE_LIFETIME_MINUTES * 60);
-				}
-	        	if (self::DECODE_ENABLED) {
-		            $result = json_decode($result, true);
-	        	}
-			} else {
+			if ($this->responseCode != self::HTTP_OK) {
 				throw new Exception(self::$errorCodes[$this->responseCode]);
 			}
-		}
+
+			$result = $this->responseBody;
+			if (self::DECODE_ENABLED) {
+				$result = json_decode($result, true);
+			}
+
+			return $result;
+		});
+
 		return $result;
+	}
+
+	private function curlExecute($url){
+		//call the API and return the result
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch, CURLOPT_HEADER, 1);
+		$result = curl_exec($ch);
+		list($header, $body) = explode("\r\n\r\n", $result, 2);
+		$this->responseHeaders = $this->parseHeaders($header);
+		$this->responseBody = $body;
+		$this->responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
 	}
 
 	//creates a full URL you can query on the API
@@ -334,8 +323,14 @@ class riotapi {
 		return str_replace('{region}', $this->REGION, $call) . ($otherQueries ? '&' : '?') . 'api_key=' . self::API_KEY;
 	}
 
-	public function getLastResponseCode(){
-		return $this->responseCode;
+	private function parseHeaders($header) {
+		$headers = array();
+		$headerLines = explode("\r\n", $header);
+		foreach ($headerLines as $headerLine) {
+			@list($key, $val) = explode(': ', $headerLine, 2);
+			$headers[$key] = $val;
+		}
+		return $headers;
 	}
 
 	public function debug($message) {

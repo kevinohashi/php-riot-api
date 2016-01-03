@@ -18,8 +18,15 @@ interface CacheInterface {
 	 * @param string $key
 	 * @param $data
 	 * @param int $ttl Time in seconds before the data becomes expired
-	 * @return mixed
 	 */
 	public function put($key, $data, $ttl = 0);
+
+	/**
+	 * @param $key
+	 * @param $ttl
+	 * @param $callback
+	 * @return mixed
+	 */
+	public function remember($key, $ttl, $callback);
 
 }
