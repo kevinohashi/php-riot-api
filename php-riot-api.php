@@ -344,4 +344,8 @@ class riotapi {
 		print_r($message);
 		echo "</pre>";
 	}
+
+	public function setRegion($region) {
+		$this->REGION = $region;
+	}
 }
