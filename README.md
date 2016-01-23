@@ -34,6 +34,8 @@ Functions
 
 	//New Riot API call. Returns match details given a match id.
 	getMatch($matchId);
+	//Returns match details including timeline (if exists) given a match id.
+	getMatch($matchId, true);
 
 	//Returns a user's matchHistory given their summoner id.
 	getMatchHistory($summoner_id);
