@@ -123,10 +123,11 @@ class riotapi {
 		return $this->request($call, (strpos($call,'?') !== false), true);
 	}
 
-	//New to my knowledge. Returns match details.
-	public function getMatch($matchId) {
-		$call = self::API_URL_2_2  . 'match/' . $matchId;
-		return $this->request($call);
+	//Returns match details. TimeLine can be requested.
+	//If timeline data is requested, but doesn't exist, then the response won't include it.
+	public function getMatch($matchId, $timeLine=false) {
+		$call = self::API_URL_2_2  . 'match/' . $matchId . ($timeLine ? '?includeTimeline=true' : '');
+		return $this->request($call, $timeLine);
 	}
 
 	//Returns a user's matchHistory given their summoner id.
@@ -318,12 +319,12 @@ class riotapi {
 				if($this->cache !== null){
 					$this->cache->put($url, $result, self::CACHE_LIFETIME_MINUTES * 60);
 				}
-	        	if (self::DECODE_ENABLED) {
-		            $result = json_decode($result, true);
-	        	}
 			} else {
 				throw new Exception(self::$errorCodes[$this->responseCode]);
 			}
+		}
+		if (self::DECODE_ENABLED) {
+			$result = json_decode($result, true);
 		}
 		return $result;
 	}
@@ -342,5 +343,9 @@ class riotapi {
 		echo "<pre>";
 		print_r($message);
 		echo "</pre>";
+	}
+
+	public function setRegion($region) {
+		$this->REGION = $region;
 	}
 }
