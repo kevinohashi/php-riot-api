@@ -26,6 +26,9 @@ Functions
 	//Returns all champion information.
 	getChampion();
 
+	//Change region
+	setRegion($region);
+
 	// Returns all free champions.
 	getFreeChampions();
 
