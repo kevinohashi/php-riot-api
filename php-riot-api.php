@@ -319,12 +319,12 @@ class riotapi {
 				if($this->cache !== null){
 					$this->cache->put($url, $result, self::CACHE_LIFETIME_MINUTES * 60);
 				}
-	        	if (self::DECODE_ENABLED) {
-		            $result = json_decode($result, true);
-	        	}
 			} else {
 				throw new Exception(self::$errorCodes[$this->responseCode]);
 			}
+		}
+		if (self::DECODE_ENABLED) {
+			$result = json_decode($result, true);
 		}
 		return $result;
 	}
