@@ -31,17 +31,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 class riotapi {
-	const API_URL_1_1 = 'https://{region}.api.pvp.net/api/lol/{region}/v1.1/';
-	const API_URL_1_2 = 'https://{region}.api.pvp.net/api/lol/{region}/v1.2/';
-	const API_URL_1_3 = 'https://{region}.api.pvp.net/api/lol/{region}/v1.3/';
-	const API_URL_1_4 = 'https://{region}.api.pvp.net/api/lol/{region}/v1.4/';
-	const API_URL_2_1 = 'https://{region}.api.pvp.net/api/lol/{region}/v2.1/';
-	const API_URL_2_2 = 'https://{region}.api.pvp.net/api/lol/{region}/v2.2/';
-	const API_URL_2_3 = "https://{region}.api.pvp.net/api/lol/{region}/v2.3/";
-	const API_URL_2_4 = "https://{region}.api.pvp.net/api/lol/{region}/v2.4/";
-	const API_URL_2_5 = "https://{region}.api.pvp.net/api/lol/{region}/v2.5/";
-	const API_URL_STATIC_1_2 = 'https://global.api.pvp.net/api/lol/static-data/{region}/v1.2/';
-	const API_URL_CURRENT_GAME_1_0 = 'https://{region}.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/';
+	
+	const API_URL_PLATFORM_3 = "https://{platform}.api.riotgames.com/lol/platform/v3/";
+	const API_URL_CHAMPION_MASTERY_3 = "https://{platform}.api.riotgames.com/lol/champion-mastery/v3/";
+	const API_URL_SPECTATOR_3 = 'https://{platform}.api.riotgames.com/lol/spectator/v3/';
+	const API_URL_STATIC_3 = 'https://{platform}.api.riotgames.com/lol/static-data/v3/';
+	const API_URL_MATCH_3 = 'https://{platform}.api.riotgames.com/lol/match/v3/';
+	const API_URL_LEAGUE_3 = 'https://{platform}.api.riotgames.com/lol/league/v3/';
+	const API_URL_SUMMONER_3 = 'https://{platform}.api.riotgames.com/lol/summoner/v3/';
 
 
 	const API_KEY = 'INSERT_API_KEY_HERE';
@@ -58,7 +55,7 @@ class riotapi {
 	const CACHE_LIFETIME_MINUTES = 60;
 	private $cache;
 
-	private $REGION;	
+	private $PLATFORM;	
 	//variable to retrieve last response code
 	private $responseCode; 
 
@@ -66,7 +63,6 @@ class riotapi {
 	private static $errorCodes = array(0   => 'NO_RESPONSE',
 									   400 => 'BAD_REQUEST',
 									   401 => 'UNAUTHORIZED',
-									   403 => 'ACCESS_DENIED',
 									   404 => 'NOT_FOUND',
 									   429 => 'RATE_LIMIT_EXCEEDED',
 									   500 => 'SERVER_ERROR',
@@ -80,9 +76,9 @@ class riotapi {
 	// Remove this commit if you want. - Ahubers
 	const DECODE_ENABLED = TRUE;
 
-	public function __construct($region, CacheInterface $cache = null)
+	public function __construct($platform, CacheInterface $cache = null)
 	{
-		$this->REGION = $region;
+		$this->PLATFORM = $platform;
 
 		$this->shortLimitQueue = new SplQueue();
 		$this->longLimitQueue = new SplQueue();
@@ -91,101 +87,159 @@ class riotapi {
 	}
 
 	//Returns all champion information.
-	public function getChampion(){
-		$call = 'champion';
+	//Set $free at true to get only free champions.
+	public function getChampion($free = false){
+		$call = 'champions';
+		
+		if($free)
+			$call  .= '?freeToPlay=true';
 
 		//add API URL to the call
-		$call = self::API_URL_1_2 . $call;
+		$call = self::API_URL_PLATFORM_3 . $call;
 
 		return $this->request($call);
 	}
 
-	// Returns all free champions.
-	public function getFreeChampions()
-	{
-		$call  = 'champion?freeToPlay=true';
-		$call  = self::API_URL_1_2 . $call;
+	//Returns all free champion information.
+	public function getFreeChampion(){
+		$call = 'champions?freeToPlay=true';
 
-		return $this->request($call, true);
+		//add API URL to the call
+		$call = self::API_URL_PLATFORM_3 . $call;
+
+		return $this->request($call);
+	}
+	
+	//Returns all champions mastery for a player
+	public function getChampionMastery($id, $championId = false){
+		
+		$call = self::API_URL_CHAMPION_MASTERY_3 . 'champion-masteries/by-summoner/' . $id ;
+		
+		if($championId)
+			$call .= "/by-champion/" . $championId;
+		
+		return $this->request($call);
 	}
 
-	//gets current game information for player on platform (region?)
-	//platform seems to be just uppercase region and 1 afterwards right now.
-	public function getCurrentGame($id,$platform){
-		$call = self::API_URL_CURRENT_GAME_1_0 . $platform . '/' . $id;
+	//gets current game information for player
+	public function getCurrentGame($id){
+		$call = self::API_URL_SPECTATOR_3 . 'active-games/by-summoner/' . $id;
 		return $this->request($call);
 	}
 
 	//performs a static call. Not counted in rate limit.
-	public function getStatic($call=null, $id=null) {
-		$call = self::API_URL_STATIC_1_2 . $call . "/" . $id;
+	//$call is what is asked (champion, item...)
+	//$id the id for a specific item, champion. Set at null to get all champions, items...
+	//$params is the string you get after the "?"
+	//		getStatic("champions", 1, "locale=fr_FR&tags=image&tags=spells") will get you image data and spells data in French from champion whose ID is 1, here Annie.
+	public function getStatic($call, $id = null, $params = null) {
+		$call = self::API_URL_STATIC_3 . $call;
 		
-		return $this->request($call, (strpos($call,'?') !== false), true);
+		if( $id !=null)
+			$call.="/" . $id;
+		
+		if( $params !=null)
+			$call.="?" . $params;
+		
+		return $this->request($call, true);
 	}
 
-	//Returns match details. TimeLine can be requested.
-	//If timeline data is requested, but doesn't exist, then the response won't include it.
-	public function getMatch($matchId, $timeLine=false) {
-		$call = self::API_URL_2_2  . 'match/' . $matchId . ($timeLine ? '?includeTimeline=true' : '');
-		return $this->request($call, $timeLine);
+	//New to my knowledge. Returns match details.
+	//Now that timeline is a separated call, when includedTimeline is true, two calls are done at the same time.
+	//Data is then processed to match the old structure, with timeline data included in the match data
+	public function getMatch($matchId, $includeTimeline = true) {
+		$call = self::API_URL_MATCH_3  . 'matches/' . $matchId;
+		
+		if(!$includeTimeline)
+			return $this->request($call);
+		
+		else
+			$timelineCall =  self::API_URL_MATCH_3  . 'timelines/by-match/' . $matchId;
+			$data = $this->requestMultiple(array(
+				"data"=>$call,
+				"timeline"=>$timelineCall
+				));
+			$data["data"]["timeline"] = $data["timeline"];
+			return $data["data"];
 	}
-
-	//Returns a user's matchHistory given their summoner id.
-	public function getMatchHistory($id) {
-		$call = self::API_URL_2_2  . 'matchlist/by-summoner/' . $id;
+	
+	//Returns timeline of a match
+	public function getTimeline($matchId){
+		$call =  self::API_URL_MATCH_3  . 'timelines/by-match/' . $matchId;
+		
 		return $this->request($call);
 	}
 
-	//Returns game statistics given a summoner's id.
-	public function getGame($id){
-		$call = 'game/by-summoner/' . $id . '/recent';
+	//Returns a user's matchList given their account id.
+	public function getMatchList($accountId,$params=null) {
+		if($params==null){
+			$call = self::API_URL_MATCH_3  . 'matchlists/by-account/' . $accountId;
+		}else{
+			$call = self::API_URL_MATCH_3  . 'matchlists/by-account/' . $accountId .'?';
+			
+			//You can pass params either as an array or as string
+			if(is_array($params))
+				foreach($params as $key=>$param){
+					//each param can also be an array, a list of champions, queues or seasons
+					//refer to API doc to get details about params
+					if(is_array($param))
+						foreach($param as $p)
+							$call .= $key . '=' . $p . '&';
+							
+					else
+						$call .= $key . '=' . $param . '&';
+				}
 
-		//add API URL to the call
-		$call = self::API_URL_1_3 . $call;
-
+			else
+				$call .= $params . '&';
+		}
+		
+		return $this->request($call);
+	}
+	
+	//Returns a user's recent matchList given their account id.
+	public function getRecentMatchList($accountId) {
+		$call = self::API_URL_MATCH_3  . 'matchlists/by-account/' . $accountId . '/recent';
+		
 		return $this->request($call);
 	}
 
 	//Returns the league of a given summoner.
-	public function getLeague($id, $entry=null){
-		$call = 'league/by-summoner/' . $id . "/" . $entry;
+	public function getLeague($id){
+		$call = 'leagues/by-summoner/' . $id;
 
 		//add API URL to the call
-		$call = self::API_URL_2_5 . $call;
+		$call = self::API_URL_LEAGUE_3 . $call;
 
 		return $this->request($call);
 	}
+	
+	//Returns the league position of a given summoner.
+	//Similar to the old league /entry
+	public function getLeaguePosition($id){
+		$call = 'positions/by-summoner/' . $id;
 
-	//Returns league information given a *list* of teams.
-	public function getLeagueByTeam($ids){
-		$call = 'league/by-team/';
-		if (is_array($ids)) {
-			$call .= implode(",", $ids);
-		}
-		else {
-			$call .= $ids;
-		}
 		//add API URL to the call
-		$call = self::API_URL_2_5 . $call;
+		$call = self::API_URL_LEAGUE_3 . $call;
+
 		return $this->request($call);
 	}
 
 	//Returns the challenger ladder.
-	public function getChallenger() {
-		$call = 'league/challenger?type=RANKED_SOLO_5x5';
+	public function getChallenger($queue = "RANKED_SOLO_5x5") {
+		$call = 'challengerleagues/by-queue/' . $queue;
 
 		//add API URL to the call
-		$call = self::API_URL_2_5 . $call;
-		return $this->request($call, true);
+		$call = self::API_URL_LEAGUE_3 . $call;
+		return $this->request($call);
 	}
-
-	//Returns a summoner's stats given summoner id.
-	public function getStats($id,$option='summary'){
-		$call = 'stats/by-summoner/' . $id . '/' . $option;
+	
+	//Returns the master ladder.
+	public function getMaster($queue = "RANKED_SOLO_5x5") {
+		$call = 'masterleagues/by-queue/' . $queue;
 
 		//add API URL to the call
-		$call = self::API_URL_1_3 . $call;
-
+		$call = self::API_URL_LEAGUE_3 . $call;
 		return $this->request($call);
 	}
 	
@@ -193,59 +247,107 @@ class riotapi {
 	public function getSummonerId($name) {
 			$name = strtolower($name);
 			$summoner = $this->getSummonerByName($name);
-			if (!self::DECODE_ENABLED) {
-				return $summoner[$name]['id'];
+			if (self::DECODE_ENABLED) {
+				return $summoner['id'];
 			}
 			else {
 				$summoner = json_decode($summoner, true);
-				return $summoner[$name]['id'];
+				return $summoner['id'];
+			}
+	}		
+	
+	//returns an account id
+	public function getSummonerAccountId($name) {
+			$name = strtolower($name);
+			$summoner = $this->getSummonerByName($name);
+			if (self::DECODE_ENABLED) {
+				return $summoner['accountId'];
+			}
+			else {
+				$summoner = json_decode($summoner, true);
+				return $summoner['accountId'];
 			}
 	}		
 
-	//Returns summoner info given summoner id.
-	public function getSummoner($id,$option=null){
-		$call = 'summoner/' . $id;
-		switch ($option) {
-			case 'masteries':
-				$call .= '/masteries';
-				break;
-			case 'runes':
-				$call .= '/runes';
-				break;
-			case 'name':
-				$call .= '/name';
-				break;
-
-			default:
-				//do nothing
-				break;
+	//Returns summoner info given summoner id or account id.
+	public function getSummoner($id,$accountId = false){
+		$call = 'summoners/';
+		if ($accountId) {
+			$call .= 'by-account/';
 		}
-
+		$call .= $id;
+		
 		//add API URL to the call
-		$call = self::API_URL_1_4 . $call;
+		$call = self::API_URL_SUMMONER_3 . $call;
 
 		return $this->request($call);
 	}
 
 	//Gets a summoner's info given their name, instead of id.
 	public function getSummonerByName($name){
-		//use rawurlencode for special characters
-		$call = 'summoner/by-name/' . rawurlencode($name);
-
+		$call = 'summoners/by-name/' . rawurlencode($name);
+		
 		//add API URL to the call
-		$call = self::API_URL_1_4 . $call;
+		$call = self::API_URL_SUMMONER_3 . $call;
 
 		return $this->request($call);
 	}
 
-	//Gets the teams of a summoner, given summoner id.
-	public function getTeam($id){
-		$call = 'team/by-summoner/' . $id;
-
+	//Gets a summoner's masteries.
+	public function getMasteries($id){
+		$call = 'masteries/by-summoner/' . $id;
+		
 		//add API URL to the call
-		$call = self::API_URL_2_3 . $call;
+		$call = self::API_URL_PLATFORM_3 . $call;
 
 		return $this->request($call);
+	}
+
+	//Gets a summoner's runes.
+	public function getRunes($id){
+		$call = 'runes/by-summoner/' . $id;
+		
+		//add API URL to the call
+		$call = self::API_URL_PLATFORM_3 . $call;
+
+		return $this->request($call);
+	}
+
+	//Gets data of matches, given array of id.
+	public function getMatches($ids, $includeTimeline = true){
+		
+		$calls=array();
+		
+		foreach($ids as $matchId){
+			$call = self::API_URL_MATCH_3  . 'matches/' . $matchId;
+			$calls["match-".$matchId] = $call;
+			
+			if($includeTimeline)
+				$calls["timeline-".$matchId] = self::API_URL_MATCH_3  . 'timelines/by-match/' . $matchId;
+		}
+		
+		if(!$includeTimeline)
+			return $this->requestMultiple($calls);
+		
+		$results = array();
+		
+		$data = $this->requestMultiple($calls);
+		
+		foreach($data as $k=>$d){
+			$e = explode("-", $k);
+			
+			//Check if it's match data
+			if($e[0]=="match"){
+				//Check if the timeline exists
+				//Timeline is only stored by Riot for one year, too old games may not have it
+				if(isset($data["timeline-".$e[1]]["frames"]))
+					//add the matching timeline
+					$d["timeline"] = $data["timeline-".$e[1]];
+				array_push($results, $d);
+			}
+		}
+		
+		return $results;
 	}
 
 	private function updateLimitQueue($queue, $interval, $call_limit){
@@ -291,10 +393,11 @@ class riotapi {
 		$queue->enqueue(time());
 	}
 
-	private function request($call, $otherQueries=false, $static = false) {
+	private function request($call, $static = false) {
 				//format the full URL
-		$url = $this->format_url($call, $otherQueries);
-
+				
+		$url = $this->format_url($call);
+		//echo $url;
 		//caching
 		if($this->cache !== null && $this->cache->has($url)){
 			$result = $this->cache->get($url);
@@ -309,7 +412,10 @@ class riotapi {
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);			
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+				'X-Riot-Token: '. self::API_KEY
+				));			
 			$result = curl_exec($ch);
 			$this->responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			curl_close($ch);
@@ -328,12 +434,49 @@ class riotapi {
 		}
 		return $result;
 	}
-
-	//creates a full URL you can query on the API
-	private function format_url($call, $otherQueries=false){
-		//because sometimes your url looks like .../something/foo?query=blahblah&api_key=dfsdfaefe
-		return str_replace('{region}', $this->REGION, $call) . ($otherQueries ? '&' : '?') . 'api_key=' . self::API_KEY;
+	
+	private function requestMultiple($calls, $static = false) {
+		
+		$urls=array();
+		$results=array();
+		
+		foreach($calls as $k=>$call){
+			$url = $this->format_url($call);
+			//Put cached data in resulsts and urls to call in urls
+			if($this->cache !== null && $this->cache->has($url)){
+				
+				if (self::DECODE_ENABLED) {
+					$results[$k] = json_decode($this->cache->get($url), true);
+				}else{
+					$results[$k] = $this->cache->get($url);
+				}
+				
+			} else {
+				$urls[$k] = $url;
+			}
+		}
+		
+		$callResult=$this->multiple_threads_request($urls);
+		
+		foreach($callResult as $k=>$result){
+			if($this->cache !== null){
+				$this->cache->put($urls[$k], $result, self::CACHE_LIFETIME_MINUTES * 60);
+			}
+			if (self::DECODE_ENABLED) {
+				$results[$k] = json_decode($result, true);
+			}else{
+				$results[$k] = $result;
+			}
+		}
+		
+		return array_merge($results);
 	}
+	
+	//creates a full URL you can query on the API
+	private function format_url($call){
+		return str_replace('{platform}', $this->PLATFORM, $call);
+	}
+
 
 	public function getLastResponseCode(){
 		return $this->responseCode;
@@ -344,8 +487,44 @@ class riotapi {
 		print_r($message);
 		echo "</pre>";
 	}
-
-	public function setRegion($region) {
-		$this->REGION = $region;
+	
+	
+	public function setPlatform($platform) {
+		$this->PLATFORM = $platform;
 	}
+	
+	private function multiple_threads_request($nodes){
+		$mh = curl_multi_init();
+		$curl_array = array();
+		foreach($nodes as $i => $url)
+		{
+			$curl_array[$i] = curl_init($url);
+			curl_setopt($curl_array[$i], CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($curl_array[$i], CURLOPT_HTTPHEADER, array(
+				'X-Riot-Token: '. self::API_KEY
+				));
+			curl_multi_add_handle($mh, $curl_array[$i]);
+		}
+		$running = NULL;
+		do {
+			usleep(10000);
+			curl_multi_exec($mh,$running);
+		} while($running > 0);
+	   
+		$res = array();
+		foreach($nodes as $i => $url)
+		{
+			$res[$i] = curl_multi_getcontent($curl_array[$i]);
+		}
+	   
+		foreach($nodes as $i => $url){
+			curl_multi_remove_handle($mh, $curl_array[$i]);
+		}
+		curl_multi_close($mh);       
+		return $res;
 }
+	
+
+}
+
+	
