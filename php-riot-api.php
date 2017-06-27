@@ -101,7 +101,7 @@ class riotapi {
 	}
 
 	//Returns all free champion information.
-	public function getFreeChampion(){
+	public function getFreeChampions(){
 		$call = 'champions?freeToPlay=true';
 
 		//add API URL to the call
