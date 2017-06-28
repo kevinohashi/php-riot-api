@@ -13,10 +13,10 @@ Getting Started
 
  - Replace INSERT_API_KEY_HERE
  - Create folder called 'cache' wherever the script is (make sure it's writeable by php-riot-api)
- - Create an instance of riotapi - $instance = new riotapi($region); 
- - $region can be na, euw, eune, br, tr (br/tr only can call getLeague() and getTeam() functions)
+ - Create an instance of riotapi - $instance = new riotapi($platform); 
+ - $platform can be na1, euw1, eune1, br1, ru, kr, oc1, la1, la2, jp1, pbe1, tr1 (br/tr only can call getLeague() and getTeam() functions)
  - Make Calls to the functions listed below and receive JSON data
- - Caching is done locally, instantiate php-riot-api with "new riotapi('na', new FileSystemCache('cache/'));" to create a cache in the subfolder 'cache'
+ - Caching is done locally, instantiate php-riot-api with "new riotapi('na1', new FileSystemCache('cache/'));" to create a cache in the subfolder 'cache'
  - DECODE_ENABLED is true by default. If you want your returns to be pure JSON and not an associative array, set it to false 
  - Take a look at testing.php for example code, including error handling, caching
 
@@ -26,54 +26,58 @@ Functions
 	//Returns all champion information.
 	getChampion();
 
-	//Change region
+	//Change platform
 	setRegion($region);
 
 	// Returns all free champions.
+	getChampion(true);
 	getFreeChampions();
 
 	//performs a static call. Not counted in rate limit.
-	getStatic($call, $id);
+	getStatic($call, $id = null, $params = null);
 
-	//New Riot API call. Returns match details given a match id.
-	getMatch($matchId);
 	//Returns match details including timeline (if exists) given a match id.
-	getMatch($matchId, true);
+	//Use with care, rate limiting is not ready for this function
+	getMatch($matchId);
+	//Returns match details given a match id, without timeline.
+	getMatch($matchId, false);
 
-	//Returns a user's matchHistory given their summoner id.
-	getMatchHistory($summoner_id);
+	//Returns timeline of a match
+	getTimeline($matchId)
 
-	//Returns game statistics given a summoner's id.
-	getGame($summoner_id);
+	//Returns a user's matchList given their account id.
+	public function getMatchList($accountId,$params=null)
 
 	//Returns the league of a given summoner.
 	getLeague($summoner_id);
-	getLeague($summoner_id, "entry");
-
-	//Returns league information given a *list* of teams.
-	getLeagueByTeam($team_ids);
+	getLeaguePosition($summoner_id);
 
 	//Returns the challenger ladder.
-	getChallenger();
-
-	//Returns a summoner's stats given summoner id.
-	getStats($summoner_id);
-	getStats($summoner_id,'ranked');
+	getChallenger($queue = "RANKED_SOLO_5x5");
+	//Returns the master ladder.
+	getMaster($queue = "RANKED_SOLO_5x5");
 
 	//returns a summoner's id
 	getSummonerId($summoner_name);
+	//returns an account's id
+	getSummonerAccountId($summoner_name);
 
 	//Returns summoner info given summoner id.
 	getSummoner($summoner_id);
-	getSummoner($summoner_id,'masteries');
-	getSummoner($summoner_id,'runes');
-	getSummoner($summoner_id,'name');
+	//Returns summoner masteries given summoner id.
+	getMasteries($summoner_id);
+	//Returns summoner runes given summoner id.
+	getRunes($summoner_id);
+
+	//Returns summoner info given account id.
+	getSummoner($accountId);
 
 	//Gets a summoner's info given their name, instead of id.
 	getSummonerByName($summoner_name);
-
-	//Gets the teams of a summoner, given summoner id.
-	getTeam($summoner_id);
+	
+	//Return details of an array of matches
+	//Use with care, rate limiting is not ready for this function
+	getMatches($ids, $includeTimeline = true)
 
 Not Complete
 ------------
