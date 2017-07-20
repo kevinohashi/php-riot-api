@@ -16,8 +16,9 @@ $id=23516141;
 // $api->setPlatform("na1");
 // $r = $api->getStatic("champions", 1, "locale=fr_FR&tags=image&tags=spells");
 // $api->setPlatform("euw1");
-// $r = $api->getMatch(2898677684);
-// $r = $api->getMatch(2898677684,false);
+// $r = $api->getMatch(3256751043);
+// $r = $api->getMatch(3256751043,27695644);
+// $r = $api->getMatch(3256751043,false,false);
 // $r = $api->getTimeline(2898677684);
 // $r = $api->getMatchList(27695644);
 // $params = array(
