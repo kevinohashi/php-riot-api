@@ -14,7 +14,7 @@ Getting Started
  - Replace INSERT_API_KEY_HERE
  - Create folder called 'cache' wherever the script is (make sure it's writeable by php-riot-api)
  - Create an instance of riotapi - $instance = new riotapi($platform); 
- - $platform can be na1, euw1, eune1, br1, ru, kr, oc1, la1, la2, jp1, pbe1, tr1 (br/tr only can call getLeague() and getTeam() functions)
+ - $platform can be na1, euw1, eun1, br1, ru, kr, oc1, la1, la2, jp1, pbe1, tr1 (br/tr only can call getLeague() and getTeam() functions)
  - Make Calls to the functions listed below and receive JSON data
  - Caching is done locally, instantiate php-riot-api with "new riotapi('na1', new FileSystemCache('cache/'));" to create a cache in the subfolder 'cache'
  - DECODE_ENABLED is true by default. If you want your returns to be pure JSON and not an associative array, set it to false 

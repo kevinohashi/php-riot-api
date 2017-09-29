@@ -45,14 +45,14 @@ class riotapi {
 
 	// Rate limit for 10 minutes
 	const LONG_LIMIT_INTERVAL = 600;
-	const RATE_LIMIT_LONG = 500;
+	const RATE_LIMIT_LONG = 180000;
 
 	// Rate limit for 10 seconds'
 	const SHORT_LIMIT_INTERVAL = 10;
-	const RATE_LIMIT_SHORT = 10;
+	const RATE_LIMIT_SHORT = 3000;
 
 	// Cache variables
-	const CACHE_LIFETIME_MINUTES = 60;
+	const CACHE_LIFETIME_MINUTES = 30;
 	private $cache;
 
 	private $PLATFORM;	
@@ -131,17 +131,25 @@ class riotapi {
 	//$call is what is asked (champion, item...)
 	//$id the id for a specific item, champion. Set at null to get all champions, items...
 	//$params is the string you get after the "?"
-	//		getStatic("champions", 1, "locale=fr_FR&tags=image&tags=spells") will get you image data and spells data in French from champion whose ID is 1, here Annie.
-	public function getStatic($call, $id = null, $params = null) {
+	// getStatic("champions", 1, "locale=fr_FR&tags=image&tags=spells") will get you image data and spells data in French from champion whose ID is 1, here Annie.
+	// $fromAPI is forcing the data to be refreshed - new structure static data limit
+	public function getStatic($call, $id = null, $params = null, $fromAPI = false) {
+
 		$call = self::API_URL_STATIC_3 . $call;
-		
-		if( $id !=null)
-			$call.="/" . $id;
 		
 		if( $params !=null)
 			$call.="?" . $params;
-		
-		return $this->request($call, true);
+
+		$data = $this->request($call, true, $fromAPI);
+
+		if( $id == null)
+			return $data;
+
+		foreach ($data['data'] as $key => $value) {
+			if($value['id'] == $id)
+				return $data['data'][$key];
+		}
+
 	}
 
 	//New to my knowledge. Returns match details.
@@ -245,28 +253,28 @@ class riotapi {
 	
 	//returns a summoner's id
 	public function getSummonerId($name) {
-			$name = strtolower($name);
-			$summoner = $this->getSummonerByName($name);
-			if (self::DECODE_ENABLED) {
-				return $summoner['id'];
-			}
-			else {
-				$summoner = json_decode($summoner, true);
-				return $summoner['id'];
-			}
+    $name = strtolower($name);
+    $summoner = $this->getSummonerByName($name);
+    if (self::DECODE_ENABLED) {
+      return $summoner['id'];
+    }
+    else {
+      $summoner = json_decode($summoner, true);
+      return $summoner['id'];
+    }
 	}		
 	
 	//returns an account id
 	public function getSummonerAccountId($name) {
-			$name = strtolower($name);
-			$summoner = $this->getSummonerByName($name);
-			if (self::DECODE_ENABLED) {
-				return $summoner['accountId'];
-			}
-			else {
-				$summoner = json_decode($summoner, true);
-				return $summoner['accountId'];
-			}
+    $name = strtolower($name);
+    $summoner = $this->getSummonerByName($name);
+    if (self::DECODE_ENABLED) {
+      return $summoner['accountId'];
+    }
+    else {
+      $summoner = json_decode($summoner, true);
+      return $summoner['accountId'];
+    }
 	}		
 
 	//Returns summoner info given summoner id or account id.
@@ -393,14 +401,13 @@ class riotapi {
 		$queue->enqueue(time());
 	}
 
-	private function request($call, $static = false) {
-				//format the full URL
-				
+	private function request($call, $static = false, $forceClear = false) {
+    //format the full URL	
 		$url = $this->format_url($call);
 		//echo $url;
 		//caching
-		if($this->cache !== null && $this->cache->has($url)){
-			$result = $this->cache->get($url);
+		if($this->cache !== null && $this->cache->has($url, $forceClear)){
+			$result = $this->cache->get($url, $forceClear);
 		} else {
 			// Check rate-limiting queues if this is not a static call.
 			if (!$static) {
@@ -420,10 +427,9 @@ class riotapi {
 			$this->responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			curl_close($ch);
 
-
 			if($this->responseCode == 200) {
 				if($this->cache !== null){
-					$this->cache->put($url, $result, self::CACHE_LIFETIME_MINUTES * 60);
+					$this->cache->put($url, $result, self::CACHE_LIFETIME_MINUTES * 60, $static);
 				}
 			} else {
 				throw new Exception(self::$errorCodes[$this->responseCode]);
@@ -477,7 +483,6 @@ class riotapi {
 		return str_replace('{platform}', $this->PLATFORM, $call);
 	}
 
-
 	public function getLastResponseCode(){
 		return $this->responseCode;
 	}
@@ -487,7 +492,6 @@ class riotapi {
 		print_r($message);
 		echo "</pre>";
 	}
-	
 	
 	public function setPlatform($platform) {
 		$this->PLATFORM = $platform;
@@ -522,8 +526,7 @@ class riotapi {
 		}
 		curl_multi_close($mh);       
 		return $res;
-}
-	
+	}
 
 }
 
