@@ -435,7 +435,7 @@ class riotapi {
 		return $result;
 	}
 	
-	private function requestMultiple($calls, $static = false) {
+	private function requestMultiple($calls) {
 		
 		$urls=array();
 		$results=array();
