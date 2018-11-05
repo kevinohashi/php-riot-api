@@ -147,8 +147,12 @@ class riotapi {
 	//New to my knowledge. Returns match details.
 	//Now that timeline is a separated call, when includedTimeline is true, two calls are done at the same time.
 	//Data is then processed to match the old structure, with timeline data included in the match data
-	public function getMatch($matchId, $includeTimeline = true) {
+	//UPDATE : you can now pass an accountId to know which participant is the player, even in normale game
+	public function getMatch($matchId, $accountId = false, $includeTimeline = true) {
 		$call = self::API_URL_MATCH_3  . 'matches/' . $matchId;
+
+		if($accountId)
+			$call .= "?forAccountId=" . $accountId;
 		
 		if(!$includeTimeline)
 			return $this->request($call);
@@ -314,12 +318,17 @@ class riotapi {
 	}
 
 	//Gets data of matches, given array of id.
-	public function getMatches($ids, $includeTimeline = true){
+	//UPDATE : you can now pass an accountId to know which participant is the player, even in normale game
+	public function getMatches($ids, $accountId = false, $includeTimeline = true){
 		
 		$calls=array();
 		
 		foreach($ids as $matchId){
 			$call = self::API_URL_MATCH_3  . 'matches/' . $matchId;
+
+			if($accountId)
+				$call .= "?forAccountId=" . $accountId;
+			
 			$calls["match-".$matchId] = $call;
 			
 			if($includeTimeline)
